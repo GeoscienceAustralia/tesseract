@@ -1,10 +1,14 @@
 import numpy as np
 from collections import OrderedDict, namedtuple
+# import only for test plotting
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d.axes3d import Axes3D
 
 TileID = namedtuple('TileID', ['prod', 'lat_start', 'lat_end', 'lon_start', 'lon_end', 'pixel_size', 'time'])
 
 class DataCube(object):
-
     
     def __init__(self, arrays={}):
         self._dims = None 
@@ -104,6 +108,32 @@ class DataCube(object):
 	"""
         return self._dims
 
+
+    def plot_datacube(self):
+        x = np.linspace(0, 5, 10)
+        y = x ** 2
+
+	plt.figure()
+	plt.plot(x, y, 'r')
+	plt.xlabel('x')
+	plt.ylabel('y')
+	plt.title('title')
+	plt.savefig('foo.png')
+
+        """
+        fig = plt.figure(figsize=(14,6))
+
+        # `ax` is a 3D-aware axis instance because of the projection='3d' keyword argument to add_subplot
+        ax = fig.add_subplot(1, 2, 1, projection='3d')
+
+        p = ax.plot_surface(X, Y, Z, rstride=4, cstride=4, linewidth=0)
+
+        # surface_plot with color grading and color bar
+        ax = fig.add_subplot(1, 2, 2, projection='3d')
+        p = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.coolwarm, linewidth=0, antialiased=False)
+        cb = fig.colorbar(p, shrink=0.5)
+        """
+
     """
     def add_tile(self, tile):
         
@@ -131,6 +161,7 @@ if __name__ == "__main__":
         
     dc = DataCube(arrays)
     print dc["", 2:3, 14:56, 4]
+    dc.plot_datacube()
     #print dc["", 2, 4, 4]
     #print dc.dims["product"]
     #print dc.dims["time"]
