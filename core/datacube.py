@@ -41,23 +41,26 @@ class DataCube(object):
             new_arrays = {}
             for key, value in self._arrays.iteritems():
                 print key
+                
                 # First check if within bounds
-                if key.lat_start <= index[1].start <= key.lat_end or key.lat_start <= index[1].stop <= key.lat_end:
+                #prod_bounds = key.prod in index[0]
+                prod_bounds = True
+                lat_bounds = key.lat_start <= index[1].start <= key.lat_end or key.lat_start <= index[1].stop <= key.lat_end
+                lon_bounds = key.lon_start <= index[2].start <= key.lon_end or key.lon_start <= index[2].stop <= key.lon_end                
+                #time_bounds = index[3].start <= key.time <= key.lon_end
+                time_bounds = True
+                
+                bounds = (prod_bounds, lat_bounds, lon_bounds, time_bounds)
+                if bounds.count(True) == len(bounds):
                     tile_lat_dim = np.arange(key.lat_start, key.lat_end, key.pixel_size)
                     lat_i1 = np.abs(tile_lat_dim - index[1].start).argmin()
                     lat_i2 = np.abs(tile_lat_dim - index[1].stop).argmin()
                     
-                    if key.lon_start <= index[2].start <= key.lon_end or key.lon_start <= index[2].stop <= key.lon_end:
-                        tile_lon_dim = np.arange(key.lon_start, key.lon_end, key.pixel_size)
-                        lon_i1 = np.abs(tile_lon_dim - index[2].start).argmin()
-                        lon_i2 = np.abs(tile_lon_dim - index[2].stop).argmin()
+                    tile_lon_dim = np.arange(key.lon_start, key.lon_end, key.pixel_size)
+                    lon_i1 = np.abs(tile_lon_dim - index[2].start).argmin()
+                    lon_i2 = np.abs(tile_lon_dim - index[2].stop).argmin()
                         
-                        new_arrays[TileID(key.prod, tile_lat_dim[lat_i1], tile_lat_dim[lat_i2], tile_lon_dim[lon_i1], tile_lon_dim[lon_i2], key.pixel_size, key.time)] = value[lat_i1:lat_i2, lon_i1:lon_i2]
-                    else:
-                        print "Not within bounds"
-                
-                else:
-                    print "Not within bounds"
+                    new_arrays[TileID(key.prod, tile_lat_dim[lat_i1], tile_lat_dim[lat_i2], tile_lon_dim[lon_i1], tile_lon_dim[lon_i2], key.pixel_size, key.time)] = value[lat_i1:lat_i2, lon_i1:lon_i2]
             
             ret_dc = DataCube(new_arrays)
             print ret_dc.dims
