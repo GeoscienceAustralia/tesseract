@@ -64,9 +64,7 @@ class DataCube(object):
                         
                     new_arrays[TileID(key.prod, tile_lat_dim[lat_i1], tile_lat_dim[lat_i2], tile_lon_dim[lon_i1], tile_lon_dim[lon_i2], key.pixel_size, key.time)] = value[lat_i1:lat_i2, lon_i1:lon_i2]
             
-            ret_dc = DataCube(new_arrays)
-            print ret_dc.dims
-                
+            return DataCube(new_arrays)
                 
                     
     """    
