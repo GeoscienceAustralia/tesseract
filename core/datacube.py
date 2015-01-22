@@ -1,9 +1,9 @@
 import numpy as np
 from collections import OrderedDict, namedtuple
 # import only for test plotting
-import matplotlib
-matplotlib.use('Agg')
+from matplotlib.ticker import LinearLocator, FormatStrFormatter
 import matplotlib.pyplot as plt
+from matplotlib import cm
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 
 TileID = namedtuple('TileID', ['prod', 'lat_start', 'lat_end', 'lon_start', 'lon_end', 'pixel_size', 'time'])
@@ -44,8 +44,6 @@ class DataCube(object):
         if len(index) == 4:
             new_arrays = {}
             for key, value in self._arrays.iteritems():
-                print key
-                
                 # First check if within bounds
                 #prod_bounds = key.prod in index[0]
                 prod_bounds = True
@@ -110,30 +108,43 @@ class DataCube(object):
 
 
     def plot_datacube(self):
-        x = np.linspace(0, 5, 10)
-        y = x ** 2
+	fig = plt.figure()
+	ax = fig.gca(projection='3d')
+        
+        times_conv = {}
+        min_time = np.inf
+        max_time = -np.inf
+        for key, value in self._arrays.iteritems():
+            times_conv[key.time] = np.float32(key.time)
+            if np.float32(key.time) < min_time:
+                min_time = np.float32(key.time)
+            if np.float32(key.time) > max_time:
+                max_time = np.float32(key.time)
 
-	plt.figure()
-	plt.plot(x, y, 'r')
-	plt.xlabel('x')
-	plt.ylabel('y')
-	plt.title('title')
-	plt.savefig('foo.png')
+        for key, value in self._arrays.iteritems():
+            times_conv[key.time] = times_conv[key.time] - min_time
 
-        """
-        fig = plt.figure(figsize=(14,6))
+        min_z = np.inf
+        max_z = -np.inf
+        for key, value in self._arrays.iteritems():
+            lons = np.arange(key.lon_start, key.lon_end, key.pixel_size)
+            lats = np.arange(key.lat_start, key.lat_end, key.pixel_size)
+            x, y = np.meshgrid(lons, lats)
+            z = times_conv[key.time]
+            surf = ax.plot_wireframe(x, y, z, rstride=1, cstride=1)
 
-        # `ax` is a 3D-aware axis instance because of the projection='3d' keyword argument to add_subplot
-        ax = fig.add_subplot(1, 2, 1, projection='3d')
+            if z < min_z:
+                min_z = z
+            if z > max_z:
+                max_z = z
+	
+        ax.set_zlim(min_z-1.0, max_z+1.0)
 
-        p = ax.plot_surface(X, Y, Z, rstride=4, cstride=4, linewidth=0)
+	#ax.zaxis.set_major_locator(LinearLocator(10))
+	#ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
 
-        # surface_plot with color grading and color bar
-        ax = fig.add_subplot(1, 2, 2, projection='3d')
-        p = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.coolwarm, linewidth=0, antialiased=False)
-        cb = fig.colorbar(p, shrink=0.5)
-        """
 
+	return plt
     """
     def add_tile(self, tile):
         
