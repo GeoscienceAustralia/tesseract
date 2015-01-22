@@ -8,6 +8,22 @@ from mpl_toolkits.mplot3d.axes3d import Axes3D
 
 TileID = namedtuple('TileID', ['prod', 'lat_start', 'lat_end', 'lon_start', 'lon_end', 'pixel_size', 'time'])
 
+def load_data(prod, min_lat, max_lat, min_lon, max_lon):
+
+    import pymongo
+    from pymongo import Connection
+
+    conn = Connection()
+    db = conn["datacube"]
+
+    cursor = db.index.find({"product": prod, "lat": {"$gte": min_lat, "$lte": max_lat}, "lon": {"$gte": min_lon, "$lte": max_lon}})
+    arrays = {}
+    for item in cursor:
+        arrays[TileID(item[u'product'], item[u'lat'], item[u'lat']+1, item[u'lon'], item[u'lon']+1, 1.0/item[u'x_size'], np.datetime64(item[u'timestamp']))] = None
+   
+    return DataCube(arrays)
+
+ 
 class DataCube(object):
     
     def __init__(self, arrays={}):
@@ -171,6 +187,7 @@ class DataCube(object):
             
     
 if __name__ == "__main__":
+    """
     arrays = {}
     arrays[TileID("NBAR", 1, 50, 1, 35, 0.1, np.datetime64('2007-07-13T03:45:23.475923Z'))] = np.random.randint(255, size=(500, 350, 6))
     arrays[TileID("NBAR", 51, 100, 36, 65, 0.1, np.datetime64('2006-01-13T23:28:19.489248Z'))] = np.random.randint(255, size=(500, 300, 6))
@@ -182,3 +199,6 @@ if __name__ == "__main__":
     #print dc["", 2, 4, 4]
     #print dc.dims["product"]
     #print dc.dims["time"]
+    """
+    dc = load_data("NBAR", -35, -33, 125, 127)
+    print dc.shape
