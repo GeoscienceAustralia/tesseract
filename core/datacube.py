@@ -16,10 +16,10 @@ def load_data(prod, min_lat, max_lat, min_lon, max_lon):
     conn = Connection('128.199.74.80', 27017)
     db = conn["datacube"]
 
-    cursor = db.index.find({"product": prod, "lat": {"$gte": min_lat, "$lte": max_lat}, "lon": {"$gte": min_lon, "$lte": max_lon}})
+    cursor = db.index2.find({"product": prod, "lat_start": {"$gte": min_lat, "$lte": max_lat}, "lon_start": {"$gte": min_lon, "$lte": max_lon}})
     arrays = {}
     for item in cursor:
-        arrays[TileID(item[u'product'], item[u'lat'], item[u'lat']+1, item[u'lon'], item[u'lon']+1, 1.0/item[u'x_size'], np.datetime64(item[u'timestamp']))] = None
+        arrays[TileID(item[u'product'], item[u'lat_start'], item[u'lat_start']+item[u'lat_extent'], item[u'lon_start'], item[u'lon_start']+item[u'lon_extent'], item[u'pixel_size'], np.datetime64(item[u'timestamp']))] = None
    
     return DataCube(arrays)
 
