@@ -13,7 +13,7 @@ def load_data(prod, min_lat, max_lat, min_lon, max_lon):
     import pymongo
     from pymongo import Connection
 
-    conn = Connection()
+    conn = Connection('128.199.74.80', 27017)
     db = conn["datacube"]
 
     cursor = db.index.find({"product": prod, "lat": {"$gte": min_lat, "$lte": max_lat}, "lon": {"$gte": min_lon, "$lte": max_lon}})
