@@ -99,6 +99,14 @@ class DataCube(object):
     """
     
     @property
+    def shape(self):
+	"""Mapping from dimension names to lengths.
+	This dictionary cannot be modified directly, but is updated when adding
+	new variables.
+	"""
+        return "({}, {}, {}, {})".format(self._dims["product"].shape[0], self._dims["latitude"].shape[0], self._dims["longitude"].shape[0], self._dims["time"].shape[0])
+
+    @property
     def dims(self):
 	"""Mapping from dimension names to lengths.
 	This dictionary cannot be modified directly, but is updated when adding
