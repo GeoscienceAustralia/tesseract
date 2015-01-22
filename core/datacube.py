@@ -6,7 +6,8 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 
-TileID = namedtuple('TileID', ['prod', 'lat_start', 'lat_end', 'lon_start', 'lon_end', 'pixel_size', 'time'])
+TileID = namedtuple('TileID', ['prod', 'lat_start', 'lat_extent', 'lon_start', 'lon_extent', 'pixel_size', 'time'])
+TileContent = namedtuple('TileContent', ['lat_dim', 'lon_dim', 'data'])
 
 def load_data(prod, min_lat, max_lat, min_lon, max_lon):
 
@@ -19,8 +20,9 @@ def load_data(prod, min_lat, max_lat, min_lon, max_lon):
     cursor = db.index2.find({"product": prod, "lat_start": {"$gte": min_lat, "$lte": max_lat}, "lon_start": {"$gte": min_lon, "$lte": max_lon}})
     arrays = {}
     for item in cursor:
-        arrays[TileID(item[u'product'], item[u'lat_start'], item[u'lat_start']+item[u'lat_extent'], item[u'lon_start'], item[u'lon_start']+item[u'lon_extent'], item[u'pixel_size'], np.datetime64(item[u'timestamp']))] = None
-   
+        arrays[TileID(item[u'product'], item[u'lat_start'], item[u'lat_start']+item[u'lat_extent'], item[u'lon_start'], item[u'lon_start']+item[u'lon_extent'], item[u'pixel_size'], np.datetime64(item[u'time']))] = \
+        TileContent(np.linspace(item[u'lat_start'], item[u'lat_start']+item[u'lat_extent'], 1.0/item[u'lat_extent'])[:1], 
+                    np.linspace(item[u'lon_start'], item[u'lon_start']+item[u'lon_extent'], 1.0/item[u'lon_extent'])[:1], None) 
     return DataCube(arrays)
 
  
@@ -40,15 +42,15 @@ class DataCube(object):
         dims["product"] = products 
         
         min_lat = min([tile_id.lat_start for tile_id in tile_ids])
-        max_lat = max([tile_id.lat_end for tile_id in tile_ids])
-        pixel = set([tile_id.pixel_size for tile_id in tile_ids])
-        latitudes = np.arange(min_lat, max_lat, next(iter(pixel)))
+        max_lat = max([tile_id.lat_start+tile_id.lat_extent for tile_id in tile_ids])
+        max_pixel = max([tile_id.pixel_size for tile_id in tile_ids])
+        latitudes = np.arange(min_lat, max_lat, max_pixel)
         dims["latitude"] = latitudes
         
         min_lon = min([tile_id.lon_start for tile_id in tile_ids])
-        max_lon = max([tile_id.lon_end for tile_id in tile_ids])
-        pixel = set([tile_id.pixel_size for tile_id in tile_ids])
-        longitudes = np.arange(min_lon, max_lon, next(iter(pixel)))
+        max_lon = max([tile_id.lon_start+tile_id.lon_extent for tile_id in tile_ids])
+        max_pixel = max([tile_id.pixel_size for tile_id in tile_ids])
+        longitudes = np.arange(min_lon, max_lon, max_pixel)
         dims["longitude"] = longitudes
        
         times = np.unique(np.sort(np.array([tile_id.time for tile_id in tile_ids])))
@@ -63,18 +65,18 @@ class DataCube(object):
                 # First check if within bounds
                 #prod_bounds = key.prod in index[0]
                 prod_bounds = True
-                lat_bounds = key.lat_start <= index[1].start <= key.lat_end or key.lat_start <= index[1].stop <= key.lat_end
-                lon_bounds = key.lon_start <= index[2].start <= key.lon_end or key.lon_start <= index[2].stop <= key.lon_end                
+                lat_bounds = key.lat_start <= index[1].start <= key.lat_start+key.lat_extent or key.lat_start <= index[1].stop <= key.lat_start+key.lat_extent
+                lon_bounds = key.lon_start <= index[2].start <= key.lon_start+key.lon_extent or key.lon_start <= index[2].stop <= key.lon_start+key.lon_extent                
                 #time_bounds = index[3].start <= key.time <= key.lon_end
                 time_bounds = True
                 
                 bounds = (prod_bounds, lat_bounds, lon_bounds, time_bounds)
                 if bounds.count(True) == len(bounds):
-                    tile_lat_dim = np.arange(key.lat_start, key.lat_end, key.pixel_size)
+                    tile_lat_dim = np.arange(key.lat_start, key.lat_start+key.lat_extent, key.pixel_size)
                     lat_i1 = np.abs(tile_lat_dim - index[1].start).argmin()
                     lat_i2 = np.abs(tile_lat_dim - index[1].stop).argmin()
                     
-                    tile_lon_dim = np.arange(key.lon_start, key.lon_end, key.pixel_size)
+                    tile_lon_dim = np.arange(key.lon_start, key.lon_start+key.lon_extent, key.pixel_size)
                     lon_i1 = np.abs(tile_lon_dim - index[2].start).argmin()
                     lon_i2 = np.abs(tile_lon_dim - index[2].stop).argmin()
                         

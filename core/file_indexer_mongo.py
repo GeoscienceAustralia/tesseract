@@ -21,7 +21,7 @@ for tile in [name for name in os.listdir(path) if os.path.isdir(os.path.join(pat
             except:
                 date = datetime.datetime.strptime(info[5], '%Y-%m-%dT%H-%M-%S')
             
-            dict = { 'lat_start': float(info[4]), 'lat_extent': 1.0, 'lon_start': float(info[3]), 'lon_extent':1.0, 'pixel_size': 1.0/4000, 'product': float(info[2]), 'time': date}
+            dict = { 'lat_start': float(info[4]), 'lat_extent': 1.0, 'lon_start': float(info[3]), 'lon_extent':1.0, 'pixel_size': 1.0/4000, 'product': info[2], 'time': date}
             coll.insert(dict)               
 
 coll.ensure_index({'lat_start': 1, 'lon_start':1, 'time':1})
