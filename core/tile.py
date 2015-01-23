@@ -16,7 +16,7 @@ class Tile(object):
         # TODO: Properly implement band dimension
         if len(index) == 2:
 
-            print("Tile been called {}".format(index))
+            #print("Tile been called {}".format(index))
             #print self._y_dim
             #print index
 
