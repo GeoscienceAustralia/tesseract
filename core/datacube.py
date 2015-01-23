@@ -160,7 +160,7 @@ class DataCube(object):
             
     
 if __name__ == "__main__":
-
+    """"
     arrays = {}
     arrays[TileID("NBAR", 43.0, 1.0, 112.0, 1.0, 0.0025, np.datetime64('2007-07-13T03:45:23.475923Z'))] = Tile(43.0, 1.0, 112.0, 1.0, 0.0025, 6, np.random.randint(255, size=(4000, 4000, 6)))
     arrays[TileID("NBAR", 44.0, 1.0, 112.0, 1.0, 0.0025, np.datetime64('2006-01-13T23:28:19.489248Z'))] = Tile(44.0, 1.0, 112.0, 1.0, 0.0025, 6, np.random.randint(255, size=(4000, 4000, 6)))
@@ -177,6 +177,10 @@ if __name__ == "__main__":
     #print dc["", 2, 4, 4]
     #print dc.dims["product"]
     #print dc.dims["time"]
+    """"
 
-    #dc = load_data("NBAR", -35, -33, 125, 127)
-    #print dc.shape
+    dc = load_data("NBAR", -35, -33, 125, 127)
+    print dc.shape
+    dc = dc["", -34.5:-33.5, 125.5:126.5, 4]
+    print dc.shape
+    dc.plot_datacube()
