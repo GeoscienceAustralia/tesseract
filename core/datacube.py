@@ -62,69 +62,25 @@ class DataCube(object):
         self._dims = dims        
 
     def __getitem__(self, index):
+        #TODO: Implement rest of dimensions
         if len(index) == 4:
             new_arrays = {}
             for key, value in self._arrays.iteritems():
-                # First check if within bounds
-                #prod_bounds = key.prod in index[0]
-                prod_bounds = True
-                lat_bounds = key.lat_start <= index[1].start <= key.lat_start+key.lat_extent or key.lat_start <= index[1].stop <= key.lat_start+key.lat_extent
-                lon_bounds = key.lon_start <= index[2].start <= key.lon_start+key.lon_extent or key.lon_start <= index[2].stop <= key.lon_start+key.lon_extent                
-                #time_bounds = index[3].start <= key.time <= key.lon_end
-                time_bounds = True
-                
-                bounds = (prod_bounds, lat_bounds, lon_bounds, time_bounds)
-                if bounds.count(True) == len(bounds):
+                tile = value[index[1].start:index[1].stop, index[2].start:index[2].stop]
+                if tile is not None:
+                    tile_lat_start = tile._y_dim[0]
+                    tile_lat_extent = tile._y_dim[-1] - tile._y_dim[0] + key.pixel_size
+                    tile_lon_start = tile._x_dim[0]
+                    tile_lon_extent = tile._x_dim[-1] - tile._x_dim[0] + key.pixel_size
+                    new_arrays[TileID(key.prod, tile_lat_start ,tile_lat_extent, tile_lon_start, tile_lon_extent,
+                                      key.pixel_size, key.time)] = tile
 
-                    lat_start = max(key.lat_start, index[1].start)
-                    lat_end = min(key.lat_start+key.lat_extent, index[1].stop)
+            if len(new_arrays) > 0:
+                return DataCube(new_arrays)
 
-                    lon_start = max(key.lon_start, index[2].start)
-                    lon_end = min(key.lon_start+key.lon_extent, index[2].stop)
+            else:
+                return None
 
-                    """
-                    tile_lat_dim = np.arange(key.lat_start, key.lat_start+key.lat_extent, key.pixel_size)
-                    lat_i1 = np.abs(tile_lat_dim - index[1].start).argmin()
-                    lat_i2 = np.abs(tile_lat_dim - index[1].stop).argmin()
-                    
-                    tile_lon_dim = np.arange(key.lon_start, key.lon_start+key.lon_extent, key.pixel_size)
-                    lon_i1 = np.abs(tile_lon_dim - index[2].start).argmin()
-                    lon_i2 = np.abs(tile_lon_dim - index[2].stop).argmin()
-                    """
-                        
-                    new_arrays[TileID(key.prod, lat_start, lat_end-lat_start, lon_start, lon_end-lon_start, key.pixel_size, key.time)] = value[lat_start:lat_end, lon_start:lon_end]
-            
-            return DataCube(new_arrays)
-                
-                    
-    """    
-    if type(index) is tuple and len(index) == 4:
-        new_index = (index[0], _translate_index(index, 2), _translate_index(index, 3), index[4])
-    """   
-            
-    """
-    def _translate_index(self, index, pos):
-        if pos == 1:
-            if type(index[pos]) is slice:
-                start = np.abs(self._dims["latitude"]-index.start).argmin()               
-                stop = np.abs(self._dims["latitude"]-index.stop).argmin()
-                print start, stop 
-                return slice(start, stop)
-        
-            elif isinstance(index[pos], int) or isinstance(index[pos], float):
-                print np.abs(self._dims["latitude"]-index).argmin()               
-                return np.abs(self._dims["latitude"]-index).argmin()               
-        
-        elif pos == 2:
-            if type(index) is slice:
-                start = np.abs(self._dims["longitude"]-index.start).argmin()               
-                stop = np.abs(self._dims["longitude"]-index.stop).argmin()               
-                return slice(start, stop)
-            
-        elif isinstance(index[pos], int) or isinstance(index[pos], float):
-                print np.abs(self._dims["longitude"]-index).argmin()               
-                return np.abs(self._dims["longitude"]-index).argmin()               
-    """
     
     @property
     def shape(self):
@@ -180,8 +136,8 @@ class DataCube(object):
         #ax.zaxis.set_major_locator(LinearLocator(10))
         #ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
 
-
-        return plt
+        plt.show()
+        #return plt
 
 
     """

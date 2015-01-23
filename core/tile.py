@@ -10,34 +10,57 @@ class Tile(object):
         self._y_dim = get_geo_dim(lat_start, lat_extent, pixel_size)
         self._pixel_size = pixel_size
         self._band_dim = np.arange(0,bands,1)+1
-        print self._band_dim
         self._array = array
 
     def __getitem__(self, index):
         # TODO: Properly implement band dimension
         if len(index) == 2:
-            new_arrays = {}
-            lat_bounds = self._y_dim[0] <= index[0].start <= self._y_dim[-1] or self._y_dim[0] <= index[0].stop <= self._y_dim[-1]
-            lon_bounds = self._x_dim[0] <= index[1].start <= self._x_dim[-1] or self._x_dim[0] <= index[1].stop <= self._x_dim[-1]
+
+            print("Tile been called {}".format(index))
+            #print self._y_dim
+            #print index
+
+            #Mostly sure about comparisons
+            lat_bounds = self._y_dim[0] <= index[0].start <= self._y_dim[-1] or self._y_dim[0] < index[0].stop < self._y_dim[-1]
+            lon_bounds = self._x_dim[0] <= index[1].start <= self._x_dim[-1] or self._x_dim[0] < index[1].stop < self._x_dim[-1]
 
             bounds = (lat_bounds, lon_bounds)
             if bounds.count(True) == len(bounds):
-                lat_i1 = np.abs(self._y_dim - index[0].start).argmin()
-                lat_i2 = np.abs(self._y_dim - index[0].stop).argmin()
-                lon_i1 = np.abs(self._x_dim - index[1].start).argmin()
-                lon_i2 = np.abs(self._x_dim - index[1].stop).argmin()
 
-                if self._array is None:
-                    return Tile(self._y_dim[lat_i1], self._y_dim[lat_i2]-self._y_dim[lat_i1], self._x_dim[lon_i1],
-                                self._x_dim[lon_i2]-self._x_dim[lon_i1], self._pixel_size, len(self._band_dim))
+                start_lat_index = max(index[0].start, self._y_dim[0])
+                array_lat_start_index = np.abs(self._y_dim - index[0].start).argmin()
+                start_lon_index = max(index[1].start, self._x_dim[0])
+                array_lon_start_index = np.abs(self._x_dim - index[1].start).argmin()
+
+                if index[0].stop > np.max(self._y_dim):
+                    end_lat_index = np.max(self._y_dim) + self._pixel_size
+                    array_lat_end_index = None
 
                 else:
-                    return Tile(self._y_dim[lat_i1], self._y_dim[lat_i2]-self._y_dim[lat_i1], self._x_dim[lon_i1],
-                                self._x_dim[lon_i2]-self._x_dim[lon_i1], self._pixel_size, len(self._band_dim),
-                                self._array[lon_i1:lon_i2, lat_i1:lat_i2])
+                    end_lat_index = index[0].stop
+                    array_lat_end_index = np.abs(self._y_dim - index[0].stop).argmin()
+
+                if index[1].stop > np.max(self._x_dim):
+                    end_lon_index = np.max(self._x_dim) + self._pixel_size
+                    array_lon_end_index = None
+
+                else:
+                    end_lon_index = index[1].stop
+                    array_lon_end_index = np.abs(self._x_dim - index[1].stop).argmin()
+
+
+                if self._array is None:
+                    return Tile(start_lat_index, end_lat_index-start_lat_index, start_lon_index,
+                                end_lon_index-start_lon_index, self._pixel_size, len(self._band_dim))
+
+                else:
+                    return Tile(start_lat_index, end_lat_index-start_lat_index, start_lon_index,
+                                end_lon_index-start_lon_index, self._pixel_size, len(self._band_dim),
+                                self._array[array_lon_start_index:array_lon_end_index,
+                                array_lat_start_index:array_lat_end_index])
 
             else:
-                return Tile()
+                return None
         else:
             # TODO: Properly manage index exceptions
             raise Exception
@@ -69,16 +92,8 @@ class Tile(object):
 if __name__ == "__main__":
 
     tile = Tile(42.0,1.0,111.0,1.0,.0025, 6)
-    #print tile._x_dim
-    #print tile._y_dim
-
-    tile = tile[42.2:42.3, 111.3:111.4]
-
-    print tile._x_dim
-    print tile._y_dim
-
-    print tile.dims
     print tile.shape
-
-
-
+    tile = tile[42.1:42.3, 111.3:111.4]
+    print tile.shape
+    tile = tile[42.1:42.3, 111.3:111.4]
+    print tile.shape
