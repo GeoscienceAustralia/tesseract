@@ -21,8 +21,8 @@ def load_data(prod, min_lat, max_lat, min_lon, max_lon):
     cursor = db.index2.find({"product": prod, "lat_start": {"$gte": min_lat, "$lte": max_lat}, "lon_start": {"$gte": min_lon, "$lte": max_lon}})
     arrays = {}
     for item in cursor:
-        arrays[TileID(item[u'product'], item[u'lat_start'], item[u'lat_extent'], item[u'lon_start'],
-                      item[u'lon_extent'], item[u'pixel_size'], np.datetime64(item[u'time']))] = \
+        arrays[TileID(item[u'product'], item[u'lat_start'], item[u'lat_start']+item[u'lat_extent'], item[u'lon_start'],
+                      item[u'lon_start']+item[u'lon_extent'], item[u'pixel_size'], np.datetime64(item[u'time']))] = \
             Tile(item[u'lat_start'], item[u'lat_extent'], item[u'lon_start'], item[u'lon_extent'], item[u'pixel_size'],
                  bands= 6, array=None)
 
@@ -160,13 +160,14 @@ class DataCube(object):
             
     
 if __name__ == "__main__":
-    """
+    
     arrays = {}
-    arrays[TileID("NBAR", 43.0, 1.0, 112.0, 1.0, 0.0025, np.datetime64('2007-07-13T03:45:23.475923Z'))] = Tile(43.0, 1.0, 112.0, 1.0, 0.0025, 6, np.random.randint(255, size=(4000, 4000, 6)))
-    arrays[TileID("NBAR", 44.0, 1.0, 112.0, 1.0, 0.0025, np.datetime64('2006-01-13T23:28:19.489248Z'))] = Tile(44.0, 1.0, 112.0, 1.0, 0.0025, 6, np.random.randint(255, size=(4000, 4000, 6)))
-    arrays[TileID("PQA", 43.0, 1.0, 112.0, 1.0, 0.0025, np.datetime64('2010-08-13T04:56:37.452752Z'))] = Tile(43.0, 1.0, 112.0, 1.0, 0.0025, 6, np.random.randint(255, size=(4000, 4000, 6)))
+    for i in range(10000):
+        print i
+        arrays[TileID("NBAR", float(i), 1.0, 112.0, 1.0, 0.00025, np.datetime64('2007-07-13T03:45:23.475923Z'))] = Tile(43.0, 1.0, 112.0, 1.0, 0.0025, 6, np.zeros((4000, 4000, 6, ), dtype=np.uint16))
         
     dc = DataCube(arrays)
+    """
     print dc.shape
     dc = dc["", 43.0:44.0, 112.0:113.0, 4]
     print dc.shape
@@ -177,9 +178,10 @@ if __name__ == "__main__":
     #print dc["", 2, 4, 4]
     #print dc.dims["product"]
     #print dc.dims["time"]
-    """
 
-    dc = load_data("NBAR", -45, -33, 111, 127)
+    dc = load_data("NBAR", -35, -33, 125, 127)
     print dc.shape
     dc = dc["", -34.5:-33.5, 125.5:126.5, 4]
     print dc.shape
+    #dc.plot_datacube()
+    """
