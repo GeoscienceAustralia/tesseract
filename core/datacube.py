@@ -19,27 +19,27 @@ def load_data(prod, min_lat, max_lat, min_lon, max_lon):
     db = conn["datacube"]
 
     cursor = db.index2.find({"product": prod, "lat_start": {"$gte": min_lat, "$lte": max_lat}, "lon_start": {"$gte": min_lon, "$lte": max_lon}})
-    arrays = {}
+    tiles = {}
     for item in cursor:
-        arrays[TileID(item[u'product'], item[u'lat_start'], item[u'lat_start']+item[u'lat_extent'], item[u'lon_start'],
+        tiles[TileID(item[u'product'], item[u'lat_start'], item[u'lat_start']+item[u'lat_extent'], item[u'lon_start'],
                       item[u'lon_start']+item[u'lon_extent'], item[u'pixel_size'], np.datetime64(item[u'time']))] = \
             Tile(item[u'lat_start'], item[u'lat_extent'], item[u'lon_start'], item[u'lon_extent'], item[u'pixel_size'],
                  bands= 6, array=None)
 
-    return DataCube(arrays)
+    return DataCube(tiles)
 
  
 class DataCube(object):
     
-    def __init__(self, arrays={}):
+    def __init__(self, tiles={}):
         self._dims = None 
-        self._arrays = arrays
+        self._tiles = tiles
         self._attrs = None
         self._dims_init()
 
     def _dims_init(self):
         dims = OrderedDict()
-        tile_ids = self._arrays.keys()
+        tile_ids = self._tiles.keys()
 
         products = np.unique(np.sort(np.array([tile_id.prod for tile_id in tile_ids])))
         dims["product"] = products
@@ -64,19 +64,19 @@ class DataCube(object):
     def __getitem__(self, index):
         #TODO: Implement rest of dimensions
         if len(index) == 4:
-            new_arrays = {}
-            for key, value in self._arrays.iteritems():
+            new_tiles = {}
+            for key, value in self._tiles.iteritems():
                 tile = value[index[1].start:index[1].stop, index[2].start:index[2].stop]
                 if tile is not None:
                     tile_lat_start = tile._y_dim[0]
                     tile_lat_extent = tile._y_dim[-1] - tile._y_dim[0] + key.pixel_size
                     tile_lon_start = tile._x_dim[0]
                     tile_lon_extent = tile._x_dim[-1] - tile._x_dim[0] + key.pixel_size
-                    new_arrays[TileID(key.prod, tile_lat_start ,tile_lat_extent, tile_lon_start, tile_lon_extent,
+                    new_tiles[TileID(key.prod, tile_lat_start ,tile_lat_extent, tile_lon_start, tile_lon_extent,
                                       key.pixel_size, key.time)] = tile
 
-            if len(new_arrays) > 0:
-                return DataCube(new_arrays)
+            if len(new_tiles) > 0:
+                return DataCube(new_tiles)
 
             else:
                 return None
@@ -107,19 +107,19 @@ class DataCube(object):
         times_conv = {}
         min_time = np.inf
         max_time = -np.inf
-        for key, value in self._arrays.iteritems():
+        for key, value in self._tiles.iteritems():
             times_conv[key.time] = np.float32(key.time)
             if np.float32(key.time) < min_time:
                 min_time = np.float32(key.time)
             if np.float32(key.time) > max_time:
                 max_time = np.float32(key.time)
 
-        for key, value in self._arrays.iteritems():
+        for key, value in self._tiles.iteritems():
             times_conv[key.time] = times_conv[key.time] - min_time
 
         min_z = np.inf
         max_z = -np.inf
-        for key, value in self._arrays.iteritems():
+        for key, value in self._tiles.iteritems():
             lons = get_geo_dim(key.lon_start, key.lon_extent, key.pixel_size)
             lats = get_geo_dim(key.lat_start, key.lat_extent, key.pixel_size)
             x, y = np.meshgrid(lons, lats)
@@ -161,12 +161,12 @@ class DataCube(object):
     
 if __name__ == "__main__":
     
-    arrays = {}
+    tiles = {}
     for i in range(10000):
         print i
-        arrays[TileID("NBAR", float(i), 1.0, 112.0, 1.0, 0.00025, np.datetime64('2007-07-13T03:45:23.475923Z'))] = Tile(43.0, 1.0, 112.0, 1.0, 0.0025, 6, np.zeros((4000, 4000, 6, ), dtype=np.uint16))
+        tiles[TileID("NBAR", float(i), 1.0, 112.0, 1.0, 0.00025, np.datetime64('2007-07-13T03:45:23.475923Z'))] = Tile(43.0, 1.0, 112.0, 1.0, 0.0025, 6, np.zeros((4000, 4000, 6, ), dtype=np.uint16))
         
-    dc = DataCube(arrays)
+    dc = DataCube(tiles)
     """
     print dc.shape
     dc = dc["", 43.0:44.0, 112.0:113.0, 4]
