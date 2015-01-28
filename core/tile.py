@@ -1,16 +1,48 @@
 import numpy as np
 from collections import OrderedDict
 from utils import get_geo_dim
+from datetime import datetime
+from pymongo import Connection
+import h5py
 
+# CONSTANTS
+DATA_PATH = "/g/data1/v10/HPCData/"
+
+# TODO: Consider utility of this function
+def load_tile(prod, lat, lon, time):
+
+    conn = Connection('128.199.74.80', 27017)
+    db = conn["datacube"]
+
+    item = db.index2.find_one({"product": prod, "lat_start": lat, "lon_start": lon, "time": time})
+    
+    return Tile(item[u'product'], item[u'lat_start'], item[u'lat_extent'], item[u'lon_start'], item[u'lon_extent'], item[u'pixel_size'],
+         item[u'time'], bands= 6, array=None)
 
 class Tile(object):
 
-    def __init__(self, lat_start=None, lat_extent=None, lon_start=None, lon_extent=None, pixel_size=None, bands= None, array=None):
-        self._x_dim = get_geo_dim(lon_start, lon_extent, pixel_size)
-        self._y_dim = get_geo_dim(lat_start, lat_extent, pixel_size)
+    def __init__(self, sat=None, prod=None, lat_id=None, lon_id=None, time=None, pixel_size=None, bands=None, 
+                 lat_start=None, lon_start=None, lat_extent=None, lon_extent=None, array=None):
+                 
+        self._sat = sat 
+        self._prod = prod 
+        self._lat_id = lat_id
+        self._lon_id = lon_id
+        self._time = time
         self._pixel_size = pixel_size
+        self._lat_start = lat_start
+        self._lon_start = lon_start
+        self._lat_extent = lat_extent
+        self._lon_extent = lon_extent
+        self._y_dim = get_geo_dim(lat_start, lat_extent, pixel_size)
+        self._x_dim = get_geo_dim(lon_start, lon_extent, pixel_size)
         self._band_dim = np.arange(0,bands,1)+1
         self._array = array
+         
+        if array is None:
+            with h5py.File(DATA_PATH + "", r) as dfile:
+                print self._prod][self._time].value 
+                self._array = dfile[self._prod][self._time].value 
 
     def __getitem__(self, index):
         # TODO: Properly implement band dimension
@@ -50,12 +82,14 @@ class Tile(object):
 
 
                 if self._array is None:
-                    return Tile(start_lat_index, end_lat_index-start_lat_index, start_lon_index,
-                                end_lon_index-start_lon_index, self._pixel_size, len(self._band_dim))
+                    return Tile(self._sat, self._prod, self._lat_id, self._lon_id, self._time, self._pixel_size, 
+                                len(self._band_dim), start_lat_index, start_lon_index,
+                                end_lat_index-start_lat_index, end_lon_index-start_lon_index, None)
 
                 else:
-                    return Tile(start_lat_index, end_lat_index-start_lat_index, start_lon_index,
-                                end_lon_index-start_lon_index, self._pixel_size, len(self._band_dim),
+                    return Tile(self._sat, self._prod, self._lat_id, self._lon_id, self._time, self._pixel_size, 
+                                len(self._band_dim), start_lat_index, start_lon_index,
+                                end_lat_index-start_lat_index, end_lon_index-start_lon_index, 
                                 self._array[array_lon_start_index:array_lon_end_index,
                                 array_lat_start_index:array_lat_end_index])
 
@@ -88,12 +122,35 @@ class Tile(object):
         return "({}, {}, {})".format(dim["latitude"].shape[0], dim["longitude"].shape[0], dim["band"].shape[0])
 
 
+    def get_time_adjacent(self, position=1):
+
+        conn = Connection('128.199.74.80', 27017)
+        db = conn["datacube"]
+
+
+        if position >= 0:
+	    cursor = db.index2.find({"product": self._prod, "lat_start": self._lat_id, "lon_start": self._lon_id, "time": {"$gte": self._time}}).sort("time", 1)
+            item = cursor[position]
+        else:
+	    cursor = db.index2.find({"product": self._prod, "lat_start": self._lat_id, "lon_start": self._lon_id, "time": {"$lte": self._time}}).sort("time", -1)
+            item = cursor[abs(position)]
+	
+        if item is not None:
+            return Tile(item[u'product'], item[u'lat_start'], item[u'lat_extent'], item[u'lon_start'], item[u'lon_extent'], item[u'pixel_size'],
+                        item[u'time'], bands= 6, array=None)
+
+        else:
+            return None 
 
 if __name__ == "__main__":
-
-    tile = Tile(42.0,1.0,111.0,1.0,.0025, 6)
-    print tile.shape
+    time = datetime.strptime("1994-04-22T23:58:40.830Z", '%Y-%m-%dT%H:%M:%S.%fZ')
+    tile = load_tile("NBAR", -32.0, 137.0, time)
+    
+    for i in range(10):
+        print tile.get_consecutive(-i)._time
+    """
     tile = tile[42.1:42.3, 111.3:111.4]
     print tile.shape
     tile = tile[42.1:42.3, 111.3:111.4]
     print tile.shape
+    """
