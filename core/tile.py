@@ -40,9 +40,9 @@ class Tile(object):
         self._array = array
          
         if array is None:
-            with h5py.File(DATA_PATH + "", r) as dfile:
-                print self._prod][self._time].value 
-                self._array = dfile[self._prod][self._time].value 
+            with h5py.File(DATA_PATH + "LS5_TM_121_-034_2006.nc", 'r') as dfile:
+                for key in dfile.iterkeys():
+                    print key
 
     def __getitem__(self, index):
         # TODO: Properly implement band dimension
@@ -143,12 +143,16 @@ class Tile(object):
             return None 
 
 if __name__ == "__main__":
+    
+    tile = Tile(sat=None, prod=None, lat_id=None, lon_id=None, time=None, pixel_size=0.00025, bands=None, 
+                 lat_start=45.0, lon_start=0.0, lat_extent=1.0, lon_extent=1.0 , array=None)
+
+    """
     time = datetime.strptime("1994-04-22T23:58:40.830Z", '%Y-%m-%dT%H:%M:%S.%fZ')
-    tile = load_tile("NBAR", -32.0, 137.0, time)
+    #tile = load_tile("NBAR", -32.0, 137.0, time)
     
     for i in range(10):
         print tile.get_consecutive(-i)._time
-    """
     tile = tile[42.1:42.3, 111.3:111.4]
     print tile.shape
     tile = tile[42.1:42.3, 111.3:111.4]
