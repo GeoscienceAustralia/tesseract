@@ -8,21 +8,10 @@ import h5py
 # CONSTANTS
 DATA_PATH = "/g/data1/v10/HPCData/"
 
-# TODO: Consider utility of this function
-def load_tile(prod, lat, lon, time):
-
-    conn = Connection('128.199.74.80', 27017)
-    db = conn["datacube"]
-
-    item = db.index2.find_one({"product": prod, "lat_start": lat, "lon_start": lon, "time": time})
-    
-    return Tile(item[u'product'], item[u'lat_start'], item[u'lat_extent'], item[u'lon_start'], item[u'lon_extent'], item[u'pixel_size'],
-         item[u'time'], bands= 6, array=None)
-
 class Tile(object):
 
     def __init__(self, sat=None, prod=None, lat_id=None, lon_id=None, time=None, pixel_size=None, bands=None, 
-                 lat_start=None, lon_start=None, lat_extent=None, lon_extent=None, array=None):
+                 lat_start=None, lon_start=None, lat_extent=None, lon_extent=None, array=None, lazy=True):
                  
         self._sat = sat 
         self._prod = prod 
@@ -38,11 +27,12 @@ class Tile(object):
         self._x_dim = get_geo_dim(lon_start, lon_extent, pixel_size)
         self._band_dim = np.arange(0,bands,1)+1
         self._array = array
-         
-        if array is None:
-            with h5py.File(DATA_PATH + "LS5_TM_121_-034_2006.nc", 'r') as dfile:
-                for key in dfile.iterkeys():
-                    print key
+
+        if not lazy:
+            print DATA_PATH + "{}_{}_{}_{}.nc".format(self._sat, self._lon_id, self._lat_id, self._time.year)
+            with h5py.File(DATA_PATH + "{}_{}_{}_{}.nc".format(self._sat, self._lon_id, self._lat_id, self._time.year), 'r') as dfile:
+                print self.timestamp
+                print dfile[self._prod].keys()[5]
 
     def __getitem__(self, index):
         # TODO: Properly implement band dimension
@@ -122,7 +112,16 @@ class Tile(object):
         return "({}, {}, {})".format(dim["latitude"].shape[0], dim["longitude"].shape[0], dim["band"].shape[0])
 
 
-    def get_time_adjacent(self, position=1):
+    @property
+    def timestamp(self):
+        """Mapping from dimension names to lengths.
+        This dictionary cannot be modified directly, but is updated when adding
+        new variables.
+        """
+        return self._time.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
+
+
+    def traverse_time(self, position=1):
 
         conn = Connection('128.199.74.80', 27017)
         db = conn["datacube"]
@@ -144,10 +143,30 @@ class Tile(object):
 
 if __name__ == "__main__":
     
-    tile = Tile(sat=None, prod=None, lat_id=None, lon_id=None, time=None, pixel_size=0.00025, bands=None, 
+    conn = Connection('128.199.74.80', 27017)
+    db = conn["datacube"]
+
+    time1 = datetime.strptime("2006-01-01T00:00:00.000Z", '%Y-%m-%dT%H:%M:%S.%fZ')
+    time2 = datetime.strptime("2007-01-01T00:00:00.000Z", '%Y-%m-%dT%H:%M:%S.%fZ')
+    
+    item = db.index2.find_one({"product": "NBAR", "lat_start": -34, "lon_start": 121, "time": {"$gte": time1, "$lt": time2}})
+    print item 
+    tile = Tile(sat="LS5_TM", prod=item[u'product'], lat_id="{0:04d}".format(int(item[u'lat_start'])), lon_id="{0:03d}".format(int(item[u'lon_start'])), time=item[u'time'], pixel_size=item['pixel_size'], bands=6, lat_start=-33.8, lon_start=121.4, lat_extent=0.45, lon_extent=0.3 , array=None, lazy=True)
+    print tile.shape 
+    #print tile.dims
+    tile = tile[-33.8:-33.4, 121.45:121.65]    
+    print tile.shape
+    #print tile.dims
+    tile = tile[-33.8:-33.4, 121.15:122.6]    
+    print tile.shape 
+    #print tile.dims
+    """
+    return Tile(item[u'product'], item[u'lat_start'], item[u'lat_extent'], item[u'lon_start'], item[u'lon_extent'], item[u'pixel_size'],
+         item[u'time'], bands= 6, array=None)
+    
+    tile = Tile(sat="LS5_TM", prod="NBAR", lat_id=-34, lon_id=121, time=None, pixel_size=0.00025, bands=None, 
                  lat_start=45.0, lon_start=0.0, lat_extent=1.0, lon_extent=1.0 , array=None)
 
-    """
     time = datetime.strptime("1994-04-22T23:58:40.830Z", '%Y-%m-%dT%H:%M:%S.%fZ')
     #tile = load_tile("NBAR", -32.0, 137.0, time)
     
