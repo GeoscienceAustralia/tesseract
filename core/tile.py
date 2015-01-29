@@ -12,7 +12,6 @@ class Tile(object):
 
     def __init__(self, sat=None, prod=None, lat_id=None, lon_id=None, time=None, pixel_size=None, bands=None, 
                  lat_start=None, lon_start=None, lat_extent=None, lon_extent=None, array=None, lazy=True):
-                 
         self._sat = sat 
         self._prod = prod 
         self._lat_id = lat_id
@@ -43,10 +42,13 @@ class Tile(object):
             #print index
 
             #Mostly sure about comparisons
-            lat_bounds = self._y_dim[0] <= index[0].start <= self._y_dim[-1] or self._y_dim[0] < index[0].stop < self._y_dim[-1]
-            lon_bounds = self._x_dim[0] <= index[1].start <= self._x_dim[-1] or self._x_dim[0] < index[1].stop < self._x_dim[-1]
+            #lat_bounds = self._y_dim[0] <= index[0].start <= self._y_dim[-1] or self._y_dim[0] < index[0].stop < self._y_dim[-1]
+            #lon_bounds = self._x_dim[0] <= index[1].start <= self._x_dim[-1] or self._x_dim[0] < index[1].stop < self._x_dim[-1]
+            lat_bounds = index[0].start <= self._y_dim[-1] and index[0].stop > self._y_dim[0]
+            lon_bounds = index[1].start <= self._x_dim[-1] and index[1].stop > self._x_dim[0]
 
             bounds = (lat_bounds, lon_bounds)
+
             if bounds.count(True) == len(bounds):
 
                 start_lat_index = max(index[0].start, self._y_dim[0])
@@ -157,7 +159,7 @@ if __name__ == "__main__":
     tile = tile[-33.8:-33.4, 121.45:121.65]    
     print tile.shape
     #print tile.dims
-    tile = tile[-33.8:-33.4, 121.15:122.6]    
+    tile = tile[-33.9:-33.4, 121.45:121.6]
     print tile.shape 
     #print tile.dims
     """

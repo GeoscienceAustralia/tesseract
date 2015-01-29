@@ -19,7 +19,7 @@ def load_data(prod, min_lat, max_lat, min_lon, max_lon, time_start, time_end, la
     db = conn["datacube"]
 
     
-    cursor = db.index2.find({"product": prod, "lat_start": {"$gte": int(floor(min_lat)), "$lte": int(floor(max_lat))}, "lon_start": {"$gte": int(floor(min_lon)), "$lte": int(floor(max_lon))}, 
+    cursor = db.index2.find({"product": prod, "lat_start": {"$gte": int(floor(min_lat)), "$lte": int(floor(max_lat))}, "lon_start": {"$gte": int(floor(min_lon)), "$lte": int(floor(max_lon))},
                             "time": {"$gte": time_start, "$lt": time_end}})
     tiles = {}
     for item in cursor:
@@ -27,8 +27,9 @@ def load_data(prod, min_lat, max_lat, min_lon, max_lon, time_start, time_end, la
         lon_start = max(item[u'lon_start'], min_lon)
         lat_extent = min(abs(item[u'lat_start']+item[u'lat_extent']-lat_start), abs(max_lat-lat_start))
         lon_extent = min(abs(item[u'lon_start']+item[u'lon_extent']-lon_start), abs(max_lon-lon_start))
-        
-        tiles[TileID(item[u'product'], lat_start, lat_extent, lon_start, lon_extent, item[u'pixel_size'], np.datetime64(item[u'time']))] = \
+
+        if lat_extent > 0 and lon_extent > 0:
+            tiles[TileID(item[u'product'], lat_start, lat_extent, lon_start, lon_extent, item[u'pixel_size'], np.datetime64(item[u'time']))] = \
                       Tile(sat="LS5_TM", prod=item[u'product'], lat_id=item[u'lat_start'], lon_id=item[u'lon_start'], time=item[u'time'], pixel_size=item[u'pixel_size'], bands=6,
                       lat_start=lat_start, lon_start=lon_start, lat_extent=lat_extent, lon_extent=lon_extent, array=None, lazy=lazy)
     return DataCube(tiles)
@@ -187,5 +188,8 @@ if __name__ == "__main__":
     dc = load_data("NBAR", -35.0, -33.0, 124.0, 127.0, time1, time2)
     print dc.shape
     dc = dc["", -34.5:-33.5, 125.5:126.5, 4]
+    print dc.shape
+
+    dc = dc["", -37.5:-33.5, 125.5:126.5, 4]
     print dc.shape
     #dc.plot_datacube()
