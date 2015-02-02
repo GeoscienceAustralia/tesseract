@@ -18,7 +18,7 @@ def load_data(prod, min_lat, max_lat, min_lon, max_lon, time_start, time_end, la
     conn = Connection('128.199.74.80', 27017)
     db = conn["datacube"]
 
-    cursor = db.index2.find({"product": prod, "lat_start": {"$gte": int(floor(min_lat)), "$lte": int(floor(max_lat))},
+    cursor = db.index.find({"product": prod, "lat_start": {"$gte": int(floor(min_lat)), "$lte": int(floor(max_lat))},
                              "lon_start": {"$gte": int(floor(min_lon)), "$lte": int(floor(max_lon))},
                              "time": {"$gte": time_start, "$lt": time_end}})
     tiles = {}
@@ -49,7 +49,7 @@ def load_data_time(prod, min_lat, max_lat, min_lon, max_lon, time, lazy=True):
     for lat in lats:
         for lon in lons:
 
-            item = db.index2.find({"product": prod, "lat_start": lat, "lon_start": lon}).sort("time", -1).limit(1)
+            item = db.index.find({"product": prod, "lat_start": lat, "lon_start": lon}).sort("time", -1).limit(1)
             
             print type(item)                 
             print item.count()
