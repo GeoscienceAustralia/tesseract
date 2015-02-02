@@ -19,8 +19,9 @@ def load_data(prod, min_lat, max_lat, min_lon, max_lon, time_start, time_end, la
     db = conn["datacube"]
 
     
-    cursor = db.index2.find({"product": prod, "lat_start": {"$gte": int(floor(min_lat)), "$lte": int(floor(max_lat))}, "lon_start": {"$gte": int(floor(min_lon)), "$lte": int(floor(max_lon))},
-                            "time": {"$gte": time_start, "$lt": time_end}})
+    cursor = db.index2.find({"product": prod, "lat_start": {"$gte": int(floor(min_lat)), "$lte": int(floor(max_lat))},
+                             "lon_start": {"$gte": int(floor(min_lon)), "$lte": int(floor(max_lon))},
+                             "time": {"$gte": time_start, "$lt": time_end}})
     tiles = {}
     for item in cursor:
         lat_start = max(item[u'lat_start'], min_lat)
@@ -30,8 +31,11 @@ def load_data(prod, min_lat, max_lat, min_lon, max_lon, time_start, time_end, la
 
         if lat_extent > 0 and lon_extent > 0:
             tiles[TileID(item[u'product'], lat_start, lat_extent, lon_start, lon_extent, item[u'pixel_size'], np.datetime64(item[u'time']))] = \
-                      Tile(sat="LS5_TM", prod=item[u'product'], lat_id=item[u'lat_start'], lon_id=item[u'lon_start'], time=item[u'time'], pixel_size=item[u'pixel_size'], bands=6,
-                      lat_start=lat_start, lon_start=lon_start, lat_extent=lat_extent, lon_extent=lon_extent, array=None, lazy=lazy)
+                Tile.load_partial_tile(item, lat_start, lon_start, lat_extent, lon_extent, lazy=lazy)
+            """
+            Tile(sat="LS5_TM", prod=item[u'product'], lat_id=item[u'lat_start'], lon_id=item[u'lon_start'], time=item[u'time'], pixel_size=item[u'pixel_size'], bands=6,
+            lat_start=lat_start, lon_start=lon_start, lat_extent=lat_extent, lon_extent=lon_extent, array=None, lazy=lazy)
+            """
     return DataCube(tiles)
 
 
@@ -111,24 +115,27 @@ class DataCube(object):
         times_conv = {}
         min_time = np.inf
         max_time = -np.inf
-        for key, value in self._arrays.iteritems():
+        for key, value in self._tiles.iteritems():
             times_conv[key.time] = np.float32(key.time)
             if np.float32(key.time) < min_time:
                 min_time = np.float32(key.time)
             if np.float32(key.time) > max_time:
                 max_time = np.float32(key.time)
 
-        for key, value in self._arrays.iteritems():
+        for key, value in self._tiles.iteritems():
             times_conv[key.time] = times_conv[key.time] - min_time
 
         min_z = np.inf
         max_z = -np.inf
-        for key, value in self._arrays.iteritems():
+        print len(self._tiles)
+        for key, value in self._tiles.iteritems():
             lons = get_geo_dim(key.lon_start, key.lon_extent, key.pixel_size)
             lats = get_geo_dim(key.lat_start, key.lat_extent, key.pixel_size)
             x, y = np.meshgrid(lons, lats)
             z = times_conv[key.time]
-            surf = ax.plot_wireframe(x, y, z, rstride=1, cstride=1)
+            print 1
+            ax.plot_wireframe(x, y, z, rstride=1, cstride=1)
+            print 2
 
             if z < min_z:
                 min_z = z
@@ -139,7 +146,7 @@ class DataCube(object):
 
         #ax.zaxis.set_major_locator(LinearLocator(10))
         #ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
-
+        print 3
         plt.show()
         #return plt
 
@@ -183,13 +190,23 @@ if __name__ == "__main__":
     #print dc.dims["product"]
     #print dc.dims["time"]
     """
-    time1 = datetime.strptime("2006-08-01T00:00:00.000Z", '%Y-%m-%dT%H:%M:%S.%fZ')
-    time2 = datetime.strptime("2007-01-01T00:00:00.000Z", '%Y-%m-%dT%H:%M:%S.%fZ')
+    time1 = datetime.strptime("2007-08-01T00:00:00.000Z", '%Y-%m-%dT%H:%M:%S.%fZ')
+    time2 = datetime.strptime("2007-09-01T00:00:00.000Z", '%Y-%m-%dT%H:%M:%S.%fZ')
     dc = load_data("NBAR", -35.0, -33.0, 124.0, 127.0, time1, time2)
     print dc.shape
     dc = dc["", -34.5:-33.5, 125.5:126.5, 4]
+    print len(dc._tiles)
     print dc.shape
 
-    dc = dc["", -37.5:-33.5, 125.5:126.5, 4]
+    dc1 = dc["", -34.5:-34.1, 125.5:126.5, 4]
+    print len(dc1._tiles)
+    print dc1.shape
+
+    dc2 = dc["", -33.90:-33.5, 125.5:126.5, 4]
+    print len(dc2._tiles)
+    print dc2.shape
+
     print dc.shape
-    #dc.plot_datacube()
+
+
+    dc2.plot_datacube()
