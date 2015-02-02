@@ -18,7 +18,7 @@ def load_data(prod, min_lat, max_lat, min_lon, max_lon, time_start, time_end, la
     conn = Connection('128.199.74.80', 27017)
     db = conn["datacube"]
 
-    cursor = db.index2.find({"product": prod, "lat_start": {"$gte": int(floor(min_lat)), "$lte": int(floor(max_lat))},
+    cursor = db.index.find({"product": prod, "lat_start": {"$gte": int(floor(min_lat)), "$lte": int(floor(max_lat))},
                              "lon_start": {"$gte": int(floor(min_lon)), "$lte": int(floor(max_lon))},
                              "time": {"$gte": time_start, "$lt": time_end}})
     tiles = {}
@@ -49,39 +49,22 @@ def load_data_time(prod, min_lat, max_lat, min_lon, max_lon, time, lazy=True):
     for lat in lats:
         for lon in lons:
 
-            item = db.index2.find({"product": prod, "lat_start": lat, "lon_start": lon}).sort("time", -1).limit(1)
+            cursor = db.index.find({"product": prod, "lat_start": lat, "lon_start": lon}).sort("time", -1).limit(1)
             
-            print type(item)                 
-            print item.count()
-            """ 
-            if item 
-            lat_start = max(item[u'lat_start'], min_lat)
-            lon_start = max(item[u'lon_start'], min_lon)
-            lat_extent = min(abs(item[u'lat_start']+item[u'lat_extent']-lat_start), abs(max_lat-lat_start))
-            lon_extent = min(abs(item[u'lon_start']+item[u'lon_extent']-lon_start), abs(max_lon-lon_start))
+            if cursor.count(with_limit_and_skip = True) == 1:
+                item = cursor[0] 
+                lat_start = max(item[u'lat_start'], min_lat)
+                lon_start = max(item[u'lon_start'], min_lon)
+                lat_extent = min(abs(item[u'lat_start']+item[u'lat_extent']-lat_start), abs(max_lat-lat_start))
+                lon_extent = min(abs(item[u'lon_start']+item[u'lon_extent']-lon_start), abs(max_lon-lon_start))
 
-            if lat_extent > 0 and lon_extent > 0:
-                tiles[TileID(item[u'product'], lat_start, lat_extent, lon_start, lon_extent, item[u'pixel_size'], np.datetime64(item[u'time']))] = \
+                if lat_extent > 0 and lon_extent > 0:
+                    tiles[TileID(item[u'product'], lat_start, lat_extent, lon_start, lon_extent, item[u'pixel_size'], np.datetime64(item[u'time']))] = \
                       load_partial_tile(item, lat_start, lon_start, lat_extent, lon_extent, lazy=lazy)
-                print lat, lon, item[u'time']
-            """
-    #print coll.distict("lat_start"), coll.distinct("lon_start")
-    #print lats, lons 
-    """
-    tiles = {}
-    for item in cursor:
-        lat_start = max(item[u'lat_start'], min_lat)
-        lon_start = max(item[u'lon_start'], min_lon)
-        lat_extent = min(abs(item[u'lat_start']+item[u'lat_extent']-lat_start), abs(max_lat-lat_start))
-        lon_extent = min(abs(item[u'lon_start']+item[u'lon_extent']-lon_start), abs(max_lon-lon_start))
-
-        if lat_extent > 0 and lon_extent > 0:
-            tiles[TileID(item[u'product'], lat_start, lat_extent, lon_start, lon_extent, item[u'pixel_size'], np.datetime64(item[u'time']))] = \
-                load_partial_tile(item, lat_start, lon_start, lat_extent, lon_extent, lazy=lazy)
-            Tile(sat="LS5_TM", prod=item[u'product'], lat_id=item[u'lat_start'], lon_id=item[u'lon_start'], time=item[u'time'], pixel_size=item[u'pixel_size'], bands=6,
-            lat_start=lat_start, lon_start=lon_start, lat_extent=lat_extent, lon_extent=lon_extent, array=None, lazy=lazy)
+                    print lat, lon, item[u'time']
+    
     return DataCube(tiles)
-    """
+
 
 class DataCube(object):
     
