@@ -47,7 +47,7 @@ class Tile(object):
             print DATA_PATH + "{}_{}_{}_{}.nc".format(self._sat, self._lon_id, self._lat_id, self._time.year)
             with h5py.File(DATA_PATH + "{}_{}_{}_{}.nc".format(self._sat, self._lon_id, self._lat_id, self._time.year), 'r') as dfile:
                 print self.timestamp
-                print dfile[self._prod].keys()
+                print dfile[self._prod][self.timestamp].shape
 
     def __getitem__(self, index):
         # TODO: Properly implement band dimension
