@@ -41,9 +41,9 @@ class Tile2(object):
         corr_lon_end = filter_coord(lon_end, orig_x_dim)
 
         lat1 = get_index(corr_lat_start, orig_y_dim)
-        lat2 = get_index(corr_lat_end, orig_y_dim)
-        lon1 = get_index(corr_lon_start, orig_x_dim)
-        lon2 = get_index(corr_lon_end, orig_x_dim)
+        lat2 = get_index(corr_lat_end, orig_y_dim) + 1
+        lon1 = get_index(corr_lon_start, orig_x_dim) 
+        lon2 = get_index(corr_lon_end, orig_x_dim) + 1
 
         self.y_dim = get_geo_dim(corr_lat_start, corr_lat_end-corr_lat_start+self._origin_id["pixel_size"], self._origin_id["pixel_size"])
         self.x_dim = get_geo_dim(corr_lon_start, corr_lon_end-corr_lon_start+self._origin_id["pixel_size"], self._origin_id["pixel_size"])
@@ -54,9 +54,9 @@ class Tile2(object):
             with h5py.File(DATA_PATH + "{0}_{1:03d}_{2:04d}_{3}.nc".format(self._origin_id["satellite"],
                                                                int(self._origin_id[u'lon_start']),
                                                                int(self._origin_id[u'lat_start']),
-                                                               self._origin_id[u'time']), 'r') as dfile:
+                                                               self._origin_id[u'time'].year), 'r') as dfile:
                 
-                self.array = dfile[self._origin_id["product"]][self._origin_id["time"]].value[lat1:lat2, lon1:lon2]
+                self.array = dfile[self._origin_id["product"]][self.timestamp].value[lat1:lat2, lon1:lon2]
 
     def __getitem__(self, index):
         # TODO: Properly implement band dimension
@@ -176,7 +176,7 @@ if __name__ == "__main__":
     print item
     print get_geo_dim(item["lat_start"], item["lat_extent"], item["pixel_size"]).shape
     tile = load_full_tile(item)
-    tile = load_partial_tile(item, -33.83333333, -33.333333, 80, 130)
+    tile = load_partial_tile(item, -33.83333333, -33.333333, 80, 130, lazy=False)
     print tile.dims
     print tile.timestamp
     print tile.shape
