@@ -9,16 +9,15 @@ import h5py
 DATA_PATH = "/g/data1/v10/HPCData/"
 
 def load_full_tile(item, lazy=True):
-    # TODO Hardcoded values
-    return Tile2(sat="LS5_TM", origin_id=item,
-                bands=6, lat_start=item[u'lat_start'], lat_end=item[u'lat_start']+item[u'lat_extent'],
+    # TODO Hardcoded bands
+    return Tile2(origin_id=item, bands=6, lat_start=item[u'lat_start'], lat_end=item[u'lat_start']+item[u'lat_extent'],
                 lon_start=item[u'lon_start'], lon_end=item[u'lon_start']+item[u'lon_extent'], lazy=lazy)
 
 
 def load_partial_tile(item, lat_start, lat_end, lon_start, lon_end, lazy=True):
-    # TODO Hardcoded values
-    return Tile2(sat="LS5_TM", origin_id=item, 
-                 bands=6, lat_start=lat_start, lat_end=lat_end, lon_start=lon_start, lon_end=lon_end, lazy=lazy)
+    # TODO Hardcoded bands
+    return Tile2(origin_id=item, bands=6, lat_start=lat_start, lat_end=lat_end,
+                 lon_start=lon_start, lon_end=lon_end, lazy=lazy)
                  
 
 
@@ -28,8 +27,9 @@ class Tile2(object):
     def __init__(self, sat=None, origin_id=None, bands=None, lat_start=None, lat_end=None,
                  lon_start=None, lon_end=None, lazy=True):
 
-        self._origin_id = origin_id
-        self._origin_id["satellite"] = sat
+        self.origin_id = origin_id
+        # TODO Hardcoded satellite (Should come with origin_id)
+        self.origin_id["satellite"] = sat="LS5_TM"
 
         orig_y_dim = get_geo_dim(origin_id["lat_start"], origin_id["lat_extent"], origin_id["pixel_size"])
         orig_x_dim = get_geo_dim(origin_id["lon_start"], origin_id["lon_extent"], origin_id["pixel_size"])
@@ -45,18 +45,18 @@ class Tile2(object):
         lon1 = get_index(corr_lon_start, orig_x_dim) 
         lon2 = get_index(corr_lon_end, orig_x_dim) + 1
 
-        self.y_dim = get_geo_dim(corr_lat_start, corr_lat_end-corr_lat_start+self._origin_id["pixel_size"], self._origin_id["pixel_size"])
-        self.x_dim = get_geo_dim(corr_lon_start, corr_lon_end-corr_lon_start+self._origin_id["pixel_size"], self._origin_id["pixel_size"])
+        self.y_dim = get_geo_dim(corr_lat_start, corr_lat_end-corr_lat_start+self.origin_id["pixel_size"], self.origin_id["pixel_size"])
+        self.x_dim = get_geo_dim(corr_lon_start, corr_lon_end-corr_lon_start+self.origin_id["pixel_size"], self.origin_id["pixel_size"])
         self.band_dim = np.arange(0,bands,1)+1
         self.array = None
 
         if not lazy:
-            with h5py.File(DATA_PATH + "{0}_{1:03d}_{2:04d}_{3}.nc".format(self._origin_id["satellite"],
-                                                               int(self._origin_id[u'lon_start']),
-                                                               int(self._origin_id[u'lat_start']),
-                                                               self._origin_id[u'time'].year), 'r') as dfile:
+            with h5py.File(DATA_PATH + "{0}_{1:03d}_{2:04d}_{3}.nc".format(self.origin_id["satellite"],
+                                                               int(self.origin_id[u'lon_start']),
+                                                               int(self.origin_id[u'lat_start']),
+                                                               self.origin_id[u'time'].year), 'r') as dfile:
                 
-                self.array = dfile[self._origin_id["product"]][self.timestamp].value[lat1:lat2, lon1:lon2]
+                self.array = dfile[self.origin_id["product"]][self.timestamp].value[lat1:lat2, lon1:lon2]
 
     def __getitem__(self, index):
         # TODO: Properly implement band dimension
@@ -78,7 +78,7 @@ class Tile2(object):
                 array_lon_start_index = np.abs(self.x_dim - index[1].start).argmin()
 
                 if index[0].stop > np.max(self.y_dim):
-                    end_lat_index = np.max(self.y_dim) + self._origin_id["pixel_size"]
+                    end_lat_index = np.max(self.y_dim) + self.origin_id["pixel_size"]
                     array_lat_end_index = None
 
                 else:
@@ -86,7 +86,7 @@ class Tile2(object):
                     array_lat_end_index = np.abs(self.y_dim - index[0].stop).argmin()
 
                 if index[1].stop > np.max(self.x_dim):
-                    end_lon_index = np.max(self.x_dim) + self._origin_id["pixel_size"]
+                    end_lon_index = np.max(self.x_dim) + self.origin_id["pixel_size"]
                     array_lon_end_index = None
 
                 else:
@@ -141,7 +141,7 @@ class Tile2(object):
         This dictionary cannot be modified directly, but is updated when adding
         new variables.
         """
-        return self._origin_id[u'time'].strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
+        return self.origin_id[u'time'].strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
 
 
     def traverse_time(self, position=1):
@@ -176,7 +176,7 @@ if __name__ == "__main__":
     print item
     print get_geo_dim(item["lat_start"], item["lat_extent"], item["pixel_size"]).shape
     tile = load_full_tile(item)
-    tile = load_partial_tile(item, -33.83333333, -33.333333, 80, 130, lazy=False)
+    tile = load_partial_tile(item, -33.83333333, -33.333333, 80, 130, lazy=True)
     print tile.dims
     print tile.timestamp
     print tile.shape
