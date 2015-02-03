@@ -40,7 +40,7 @@ def load_data(prod, min_lat, max_lat, min_lon, max_lon, time_start, time_end, la
 def get_snapshot(prod, min_lat, max_lat, min_lon, max_lon, time):
 
     dc = _load_data_time(prod, min_lat, max_lat, min_lon, max_lon, time, lazy=False)
-    
+
     for key, value in dc._tiles.iteritems():
         print value._array.shape
         break
@@ -245,6 +245,7 @@ if __name__ == "__main__":
 
     """
     time1 = datetime.strptime("2007-08-01T00:00:00.000Z", '%Y-%m-%dT%H:%M:%S.%fZ')
-    dc = load_data_time("NBAR", -35.0, -33.0, 124.0, 127.0, time1, lazy=False)
+    get_snapshot("NBAR", -35.0, -33.0, 124.0, 127.0, time1)
+    #dc = load_data_time("NBAR", -35.0, -33.0, 124.0, 127.0, time1, lazy=False)
 
     #dc2.plot_datacube()
