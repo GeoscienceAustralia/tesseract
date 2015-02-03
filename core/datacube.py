@@ -37,8 +37,17 @@ def load_data(prod, min_lat, max_lat, min_lon, max_lon, time_start, time_end, la
             """
     return DataCube(tiles)
 
+def get_snapshot(prod, min_lat, max_lat, min_lon, max_lon, time):
 
-def load_data_time(prod, min_lat, max_lat, min_lon, max_lon, time, lazy=True):
+    dc = _load_data_time(prod, min_lat, max_lat, min_lon, max_lon, time, lazy=False)
+    
+    for key, value in dc._tiles.iteritems():
+        print value._array.shape
+        break
+
+
+
+def _load_data_time(prod, min_lat, max_lat, min_lon, max_lon, time, lazy=True):
     lats = np.arange(floor(min_lat), floor(max_lat)+1)  
     lons = np.arange(floor(min_lon), floor(max_lon)+1)  
 
