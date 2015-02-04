@@ -177,11 +177,21 @@ if __name__ == "__main__":
     item = db.index.find_one({"product": "NBAR", "lat_start": -34, "lon_start": 121, "time": {"$gte": time1, "$lt": time2}})
 
     tile = load_partial_tile(item, -33.83333333, -33.333333, 80, 130, lazy=True)
-
-    next_tile= tile.traverse_time(1)
     print tile.dims
     print tile.timestamp
     print tile.shape
+
+    next_tile= tile.traverse_time(1)
+    print next_tile.dims
+    print next_tile.timestamp
+    print next_tile.shape
+    
+    next_tile= next_tile.traverse_time(1)
+    print next_tile.dims
+    print next_tile.timestamp
+    print next_tile.shape
+    
+    next_tile= next_tile.traverse_time(1)
     print next_tile.dims
     print next_tile.timestamp
     print next_tile.shape
