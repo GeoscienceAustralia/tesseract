@@ -151,15 +151,17 @@ class Tile2(object):
 
 
         if position >= 0:
-	    cursor = db.index2.find({"product": self._prod, "lat_start": self._lat_id, "lon_start": self._lon_id, "time": {"$gte": self._time}}).sort("time", 1)
-            item = cursor[position]
+	        cursor = db.index.find(dict(product=self.origin_id["product"], lat_start=self.origin_id["lat_start"],
+                                         lon_start=self.origin_id["lon_start"], time={"$gte": self.origin_id["time"]})).sort("time", 1)
+
         else:
-	    cursor = db.index2.find({"product": self._prod, "lat_start": self._lat_id, "lon_start": self._lon_id, "time": {"$lte": self._time}}).sort("time", -1)
-            item = cursor[abs(position)]
+	        cursor = db.index.find(dict(product=self.origin_id["product"], lat_start=self.origin_id["lat_start"],
+                                         lon_start=self.origin_id["lon_start"], time={"$lte": self.origin_id["time"]})).sort("time", -1)
+        item = cursor[abs(position)]
 	
         if item is not None:
-            return Tile2(item[u'product'], item[u'lat_start'], item[u'lat_extent'], item[u'lon_start'], item[u'lon_extent'], item[u'pixel_size'],
-                        item[u'time'], bands= 6, array=None)
+            return Tile2(origin_id=item, bands=6, lat_start=self.y_dim[0], lat_end=self.y_dim[-1],
+                 lon_start=self.x_dim[0], lon_end=self.x_dim[-1], lazy=True)
 
         else:
             return None 
@@ -173,14 +175,13 @@ if __name__ == "__main__":
     time2 = datetime.strptime("2007-01-01T00:00:00.000Z", '%Y-%m-%dT%H:%M:%S.%fZ')
     
     item = db.index.find_one({"product": "NBAR", "lat_start": -34, "lon_start": 121, "time": {"$gte": time1, "$lt": time2}})
-    print item
-    print get_geo_dim(item["lat_start"], item["lat_extent"], item["pixel_size"]).shape
-    tile = load_full_tile(item)
+
     tile = load_partial_tile(item, -33.83333333, -33.333333, 80, 130, lazy=True)
+
+    next_tile= tile.traverse_time(1)
     print tile.dims
     print tile.timestamp
     print tile.shape
-    if tile.array is not None: 
-        print tile.array.shape
-    else:
-        print "Empty array"
+    print next_tile.dims
+    print next_tile.timestamp
+    print next_tile.shape
