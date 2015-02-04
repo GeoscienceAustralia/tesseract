@@ -25,17 +25,9 @@ def load_data(prod, min_lat, max_lat, min_lon, max_lon, time_start, time_end, la
 
     return DataCube(tiles)
 
-def get_snapshot(prod, min_lat, max_lat, min_lon, max_lon, time):
 
-    dc = _load_data_time(prod, min_lat, max_lat, min_lon, max_lon, time, lazy=False)
-    print dc.dims
-    for tile in dc._tiles:
-        #print tile.array.shape
-        print tile.shape
+def get_snapshot(prod, min_lat, max_lat, min_lon, max_lon, time, lazy=True):
 
-
-
-def _load_data_time(prod, min_lat, max_lat, min_lon, max_lon, time, lazy=True):
     lats = np.arange(floor(min_lat), floor(max_lat)+1)  
     lons = np.arange(floor(min_lon), floor(max_lon)+1)  
 
@@ -49,7 +41,7 @@ def _load_data_time(prod, min_lat, max_lat, min_lon, max_lon, time, lazy=True):
             
             if cursor.count(with_limit_and_skip = True) == 1:
                 item = cursor[0]
-                tiles.append(load_partial_tile(item, min_lat, max_lat, min_lon, max_lon, lazy=True))
+                tiles.append(load_partial_tile(item, min_lat, max_lat, min_lon, max_lon, lazy=lazy))
                 print lat, lon, item[u'time']
     
     return DataCube(tiles)
@@ -161,65 +153,19 @@ class DataCube(object):
         #return plt
 
 
-    """
     def add_tile(self, tile):
-        
-        self.data[(tile.prod, tile.lat, tile.lon, tile.time)] = tile
-        
-        if self.x_span is None:
-            self.x_span = np.arange(tile.lon, tile.lon+1, 1/tile.x_span)
-        else:
-            self.x_span = np.arange(min(self.x_span, tile.lon), max(self.x_span, tile.lon+1), 1/tile.x_span)
-        
-        if self.y_span is None:
-            self.y_span = np.arange(tile.lat, tile.lat+1, 1/tile.y_span)
-        else:
-            self.y_span = np.arange(min(self.y_span, tile.lat), max(self.y_span, tile.lat+1), 1/tile.y_span)
-            
-        self.time_span.append(tile.time).sort()
-    """
-            
+
+        self._tiles.append(tile) 
+        self._dims_init()
+
     
 if __name__ == "__main__":
     
-    """
-    arrays = {}
-    for i in range(10000):
-        print i
-        arrays[TileID("NBAR", float(i), 1.0, 112.0, 1.0, 0.00025, np.datetime64('2007-07-13T03:45:23.475923Z'))] = Tile(43.0, 1.0, 112.0, 1.0, 0.0025, 6, np.zeros((4000, 4000, 6, ), dtype=np.uint16))
-        
-    dc = DataCube(arrays)
-    print dc.shape
-    dc = dc["", 43.0:44.0, 112.0:113.0, 4]
-    print dc.shape
-    dc.plot_datacube()
-    dc = dc["", 43.5:44.0, 112.6:112.8, 4]
-    print dc.shape
-    #
-    #print dc["", 2, 4, 4]
-    #print dc.dims["product"]
-    #print dc.dims["time"]
     time1 = datetime.strptime("2007-08-01T00:00:00.000Z", '%Y-%m-%dT%H:%M:%S.%fZ')
-    time2 = datetime.strptime("2007-09-01T00:00:00.000Z", '%Y-%m-%dT%H:%M:%S.%fZ')
-    dc = load_data("NBAR", -35.0, -33.0, 124.0, 127.0, time1, time2, lazy=False)
+    dc = get_snapshot("NBAR", -35.0, -33.0, 124.0, 127.0, time1, lazy=True)
+    print type(dc) 
     print dc.shape
-    dc = dc["", -34.5:-33.5, 125.5:126.5, 4]
-    print len(dc._tiles)
+    dc = dc["", -34.0:-33.5, 124.5:126.5, 4]
+    print "-34.0:-33.5, 124.5:126.5, 4"
+    print dc.dims["longitude"]
     print dc.shape
-
-    dc1 = dc["", -34.5:-34.1, 125.5:126.5, 4]
-    print len(dc1._tiles)
-    print dc1.shape
-
-    dc2 = dc["", -33.90:-33.5, 125.5:126.5, 4]
-    print len(dc2._tiles)
-    print dc2.shape
-
-    print dc.shape
-
-    """
-    time1 = datetime.strptime("2007-08-01T00:00:00.000Z", '%Y-%m-%dT%H:%M:%S.%fZ')
-    get_snapshot("NBAR", -35.0, -33.0, 124.0, 127.0, time1)
-    #dc = load_data_time("NBAR", -35.0, -33.0, 124.0, 127.0, time1, lazy=False)
-
-    #dc2.plot_datacube()

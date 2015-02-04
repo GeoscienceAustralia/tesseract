@@ -74,12 +74,12 @@ class Tile2(object):
 
 
             if self.array is None:
-                return Tile2(origin_id=self.origin_id, bands=None, lat_start=corr_lat_start, lat_end=corr_lat_end,
+                return Tile2(origin_id=self.origin_id, bands=6, lat_start=corr_lat_start, lat_end=corr_lat_end,
                  lon_start=corr_lon_start, lon_end=corr_lon_end, array=None, lazy=True)
 
             else:
-                return Tile2(origin_id=self.origin_id, bands=None, lat_start=corr_lat_start, lat_end=corr_lat_end,
-                 lon_start=corr_lon_start, lon_end=corr_lon_end, array=self.array[lon1:lon2, lat1:lat2], lazy=True)
+                return Tile2(origin_id=self.origin_id, bands=6, lat_start=corr_lat_start, lat_end=corr_lat_end,
+                 lon_start=corr_lon_start, lon_end=corr_lon_end, array=self.array[lon1:lon2, lat1:lat2], lazy=False)
 
         else:
             # TODO: Properly manage index exceptions
