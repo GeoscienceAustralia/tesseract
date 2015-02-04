@@ -63,9 +63,9 @@ class Tile2(object):
         if len(index) == 2:
 
             corr_lat_start = filter_coord(index[0].start, self.y_dim)
-            corr_lat_end = filter_coord(index[0].end, self.y_dim)
+            corr_lat_end = filter_coord(index[0].stop, self.y_dim)
             corr_lon_start = filter_coord(index[1].start, self.x_dim)
-            corr_lon_end = filter_coord(index[1].end, self.x_dim)
+            corr_lon_end = filter_coord(index[1].stop, self.x_dim)
 
             lat1 = get_index(corr_lat_start, self.y_dim)
             lat2 = get_index(corr_lat_end, self.y_dim) + 1
@@ -149,22 +149,13 @@ if __name__ == "__main__":
     
     item = db.index.find_one({"product": "NBAR", "lat_start": -34, "lon_start": 121, "time": {"$gte": time1, "$lt": time2}})
 
-    tile = load_partial_tile(item, -33.83333333, -33.333333, 80, 130, lazy=True)
+    tile = load_partial_tile(item, -33.83333333, -33.333333, 80, 130, lazy=False)
     print tile.dims
-    print tile.timestamp
+    print tile.array.shape
     print tile.shape
 
-    next_tile= tile.traverse_time(1)
-    print next_tile.dims
-    print next_tile.timestamp
-    print next_tile.shape
-    
-    next_tile= next_tile.traverse_time(1)
-    print next_tile.dims
-    print next_tile.timestamp
-    print next_tile.shape
-    
-    next_tile= next_tile.traverse_time(1)
-    print next_tile.dims
-    print next_tile.timestamp
-    print next_tile.shape
+    tile2 = tile[-33.66666666:-33.40, 121.2:121.8]
+    print "-33.66666666:-33.40, 121.2:121.8"
+    print tile2.dims
+    print tile2.array.shape
+    print tile2.shape
