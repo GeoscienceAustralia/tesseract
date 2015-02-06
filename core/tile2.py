@@ -27,9 +27,11 @@ def drill_tiles(cursor, lat, lon, product, band):
     dfile = None
 
     for item in cursor:
+        print "item"
         item_year = item[u'time'].year
         if item_year != year_file:
             if dfile is not None:
+                print "closed!"
                 dfile.close()
 
             print (DATA_PATH + "{0}_{1:03d}_{2:04d}_{3}.nc".format("LS5_TM",
@@ -40,7 +42,9 @@ def drill_tiles(cursor, lat, lon, product, band):
                                                                int(item[u'lon_start']),
                                                                int(item[u'lat_start']),
                                                                item[u'time'].year), 'r')
-        
+       
+            year_file = item_year
+ 
         tiles.append(Tile2(origin_id=item, bands=6, lat_start=lat, lat_end=lat,
                      lon_start=lon, lon_end=lon, array=None, lazy=True, file_pointer=dfile))
 

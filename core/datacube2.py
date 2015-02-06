@@ -52,8 +52,10 @@ def pixel_drill(product, lat, lon, time_start, time_end, band):
     conn = Connection('128.199.74.80', 27017)
     db = conn["datacube"]
 
+    print "index sent"
     cursor = db.index.find({"product": product, "lat_start": int(floor(lat)), "lon_start": int(floor(lon)),
                              "time": {"$gte": time_start, "$lt": time_end}}).sort("time", 1)
+    print "index returned"
 
     tiles = drill_tiles(cursor, lat, lon, product, band)
 
