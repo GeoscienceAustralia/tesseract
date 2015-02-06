@@ -59,7 +59,8 @@ def pixel_drill(product, lat, lon, time_start, time_end, band):
 
     tiles = drill_tiles2(cursor, lat, lon, product, band)
 
-    return DataCube(tiles)
+    #return DataCube(tiles)
+    return tiles
 
 
 class DataCube(object):
@@ -179,5 +180,5 @@ if __name__ == "__main__":
     time1 = datetime.strptime("1982-08-01T00:00:00.000Z", '%Y-%m-%dT%H:%M:%S.%fZ')
     time2 = datetime.strptime("2011-08-01T00:00:00.000Z", '%Y-%m-%dT%H:%M:%S.%fZ')
     
-    dc = pixel_drill("NBAR", -34.295, 125.832, time1, time2, 6)
-    print dc.shape
+    dc = pixel_drill("NBAR", -33.295, 125.832, time1, time2, 6)
+    print dc

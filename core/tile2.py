@@ -29,6 +29,7 @@ def drill_tiles2(cursor, lat, lon, product, band):
 
     for item in cursor:
         print "item"
+        print item[u'time']
 
         item_year = item[u'time'].year
         if item_year != year_file:
@@ -48,7 +49,7 @@ def drill_tiles2(cursor, lat, lon, product, band):
        
             year_file = item_year
 
-        tiles.append(dfile["NBAR"][1345, 1653, 0:6])
+        tiles.append(dfile[product][item[u'time'].strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]][1345, 1653, 0:6])
 
     return tiles
 
