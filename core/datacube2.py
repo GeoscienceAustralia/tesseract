@@ -1,7 +1,7 @@
 from datetime import datetime
 import numpy as np
 from collections import OrderedDict, namedtuple
-from tile2 import Tile2, load_partial_tile, drill_tiles
+from tile2 import Tile2, load_partial_tile, drill_tiles2
 from math import floor
 from utils import get_geo_dim
 # import only for test plotting
@@ -57,7 +57,7 @@ def pixel_drill(product, lat, lon, time_start, time_end, band):
                              "time": {"$gte": time_start, "$lt": time_end}}).sort("time", 1)
     print "index returned"
 
-    tiles = drill_tiles(cursor, lat, lon, product, band)
+    tiles = drill_tiles2(cursor, lat, lon, product, band)
 
     return DataCube(tiles)
 
