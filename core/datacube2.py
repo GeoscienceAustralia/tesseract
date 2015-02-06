@@ -1,7 +1,7 @@
 from datetime import datetime
 import numpy as np
 from collections import OrderedDict, namedtuple
-from tile2 import Tile2, load_partial_tile
+from tile2 import Tile2, load_partial_tile, drill_tiles
 from math import floor
 from utils import get_geo_dim
 # import only for test plotting
@@ -44,6 +44,19 @@ def get_snapshot(prod, min_lat, max_lat, min_lon, max_lon, time, lazy=True):
                 tiles.append(load_partial_tile(item, min_lat, max_lat, min_lon, max_lon, lazy=lazy))
                 print lat, lon, item[u'time']
     
+    return DataCube(tiles)
+
+
+def pixel_drill(product, lat, lon, time_start, time_end, band):
+
+    conn = Connection('128.199.74.80', 27017)
+    db = conn["datacube"]
+
+    cursor = db.index.find({"product": product, "lat_start": int(floor(lat)), "lon_start": int(floor(lon)),
+                             "time": {"$gte": time_start, "$lt": time_end}}).sort("time", 1)
+
+    tiles = drill_tiles(cursor, lat, lon, product, band)
+
     return DataCube(tiles)
 
 
@@ -161,11 +174,8 @@ class DataCube(object):
     
 if __name__ == "__main__":
     
-    time1 = datetime.strptime("2007-08-01T00:00:00.000Z", '%Y-%m-%dT%H:%M:%S.%fZ')
-    dc = get_snapshot("NBAR", -35.0, -33.0, 124.0, 127.0, time1, lazy=True)
-    print type(dc) 
-    print dc.shape
-    dc = dc["", -34.0:-33.5, 124.5:126.5, 4]
-    print "-34.0:-33.5, 124.5:126.5, 4"
-    print dc.dims["longitude"]
+    time1 = datetime.strptime("1982-08-01T00:00:00.000Z", '%Y-%m-%dT%H:%M:%S.%fZ')
+    time2 = datetime.strptime("2011-08-01T00:00:00.000Z", '%Y-%m-%dT%H:%M:%S.%fZ')
+    
+    dc = pixel_drill("NBAR", -34.295, 125.832, time1, time2, 6)
     print dc.shape

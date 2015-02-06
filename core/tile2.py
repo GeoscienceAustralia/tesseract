@@ -19,13 +19,39 @@ def load_partial_tile(item, lat_start, lat_end, lon_start, lon_end, lazy=True):
     return Tile2(origin_id=item, bands=6, lat_start=lat_start, lat_end=lat_end,
                  lon_start=lon_start, lon_end=lon_end, lazy=lazy)
                  
+def drill_tiles(cursor, lat, lon, product, band):
+    # TODO Hardcoded bands
+
+    tiles = []
+    year_file = None
+    dfile = None
+
+    for item in cursor:
+        item_year = item[u'time'].year
+        if item_year != year_file:
+            if dfile is not None:
+                dfile.close()
+
+            print (DATA_PATH + "{0}_{1:03d}_{2:04d}_{3}.nc".format("LS5_TM",
+                                                               int(item[u'lon_start']),
+                                                               int(item[u'lat_start']),
+                                                               item[u'time'].year), 'r')
+            dfile = h5py.File(DATA_PATH + "{0}_{1:03d}_{2:04d}_{3}.nc".format("LS5_TM",
+                                                               int(item[u'lon_start']),
+                                                               int(item[u'lat_start']),
+                                                               item[u'time'].year), 'r')
+        
+        tiles.append(Tile2(origin_id=item, bands=6, lat_start=lat, lat_end=lat,
+                     lon_start=lon, lon_end=lon, array=None, lazy=True, file_pointer=dfile))
+
+    return tiles
 
 
 class Tile2(object):
 
     # Consider integrating satellite information inside id_object
     def __init__(self, origin_id=None, bands=None, lat_start=None, lat_end=None,
-                 lon_start=None, lon_end=None, array =None, lazy=True):
+                 lon_start=None, lon_end=None, array =None, lazy=True, file_pointer=None):
 
         self.origin_id = origin_id
         # TODO Hardcoded satellite (Should come with origin_id)
@@ -50,12 +76,17 @@ class Tile2(object):
         self.band_dim = np.arange(0,bands,1)+1
         self.array = None
 
+        if file_pointer is not None:
+                self.array = file_pointer[self.origin_id["product"]][self.timestamp].value[lat1:lat2, lon1:lon2]
+
+
         if not lazy:
             with h5py.File(DATA_PATH + "{0}_{1:03d}_{2:04d}_{3}.nc".format(self.origin_id["satellite"],
                                                                int(self.origin_id[u'lon_start']),
                                                                int(self.origin_id[u'lat_start']),
                                                                self.origin_id[u'time'].year), 'r') as dfile:
                 
+
                 self.array = dfile[self.origin_id["product"]][self.timestamp].value[lat1:lat2, lon1:lon2]
 
     def __getitem__(self, index):
