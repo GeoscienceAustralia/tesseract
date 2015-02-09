@@ -1,7 +1,8 @@
 from datetime import datetime
 import numpy as np
+import pandas as pd
 from collections import OrderedDict, namedtuple
-from tile2 import Tile2, load_partial_tile, drill_tiles2
+from tile2 import Tile2, load_partial_tile, drill_tiles
 from math import floor
 from utils import get_geo_dim
 # import only for test plotting
@@ -47,7 +48,22 @@ def get_snapshot(prod, min_lat, max_lat, min_lon, max_lon, time, lazy=True):
     return DataCube(tiles)
 
 
-def pixel_drill(product, lat, lon, time_start, time_end, band):
+def get_timeseries(product, lat, lon, time_start, time_end, band, nan_value=-999):
+
+    tiles = _pixel_drill(product, lat, lon, time_start, time_end, band)
+    
+    ts_data = [] 
+    for tile in tiles:
+        filt_array = [None if x==nan_value else x for x in tile.array[0][0]]
+        if all(filt_array):
+            filt_array = [tile.origin_id[u'time']] + filt_array
+            ts_data.append(tuple(filt_array))
+   
+    return pd.DataFrame(ts_data)
+    
+
+
+def _pixel_drill(product, lat, lon, time_start, time_end, band):
 
     conn = Connection('128.199.74.80', 27017)
     db = conn["datacube"]
@@ -57,7 +73,7 @@ def pixel_drill(product, lat, lon, time_start, time_end, band):
                              "time": {"$gte": time_start, "$lt": time_end}}).sort("time", 1)
     print "index returned"
 
-    tiles = drill_tiles2(cursor, lat, lon, product, band)
+    tiles = drill_tiles(cursor, lat, lon, product, band)
 
     #return DataCube(tiles)
     return tiles
@@ -180,5 +196,6 @@ if __name__ == "__main__":
     time1 = datetime.strptime("1982-08-01T00:00:00.000Z", '%Y-%m-%dT%H:%M:%S.%fZ')
     time2 = datetime.strptime("2011-08-01T00:00:00.000Z", '%Y-%m-%dT%H:%M:%S.%fZ')
     
-    dc = pixel_drill("NBAR", -33.295, 125.832, time1, time2, 6)
-    print dc
+    ts = get_timeseries("NBAR", -32.495, 126.532, time1, time2, 6)
+    print ts
+    print ts.head

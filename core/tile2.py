@@ -20,41 +20,6 @@ def load_partial_tile(item, lat_start, lat_end, lon_start, lon_end, lazy=True):
                  lon_start=lon_start, lon_end=lon_end, lazy=lazy)
 
                  
-def drill_tiles2(cursor, lat, lon, product, band):
-    # TODO Hardcoded bands
-
-    tiles = []
-    year_file = None
-    dfile = None
-
-    for item in cursor:
-        print "item"
-        print item[u'time']
-
-        item_year = item[u'time'].year
-        if item_year != year_file:
-            if dfile is not None:
-                print "closed!"
-                dfile.close()
-
-
-            print (DATA_PATH + "{0}_{1:03d}_{2:04d}_{3}.nc".format("LS5_TM",
-                                                               int(item[u'lon_start']),
-                                                               int(item[u'lat_start']),
-                                                               item[u'time'].year), 'r')
-            dfile = h5py.File(DATA_PATH + "{0}_{1:03d}_{2:04d}_{3}.nc".format("LS5_TM",
-                                                               int(item[u'lon_start']),
-                                                               int(item[u'lat_start']),
-                                                               item[u'time'].year), 'r')
-       
-            year_file = item_year
-
-        tiles.append(dfile[product][item[u'time'].strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]][1345, 1653, 0:6])
-
-    return tiles
-
-
-
 def drill_tiles(cursor, lat, lon, product, band):
     # TODO Hardcoded bands
 
@@ -63,17 +28,12 @@ def drill_tiles(cursor, lat, lon, product, band):
     dfile = None
 
     for item in cursor:
-        print "item"
         item_year = item[u'time'].year
         if item_year != year_file:
             if dfile is not None:
                 print "closed!"
                 dfile.close()
 
-            print (DATA_PATH + "{0}_{1:03d}_{2:04d}_{3}.nc".format("LS5_TM",
-                                                               int(item[u'lon_start']),
-                                                               int(item[u'lat_start']),
-                                                               item[u'time'].year), 'r')
             dfile = h5py.File(DATA_PATH + "{0}_{1:03d}_{2:04d}_{3}.nc".format("LS5_TM",
                                                                int(item[u'lon_start']),
                                                                int(item[u'lat_start']),
@@ -117,7 +77,7 @@ class Tile2(object):
         self.array = None
 
         if file_pointer is not None:
-                self.array = file_pointer[self.origin_id["product"]][self.timestamp].value[lat1:lat2, lon1:lon2]
+                self.array = file_pointer[self.origin_id["product"]][self.timestamp][lat1:lat2, lon1:lon2, 0:6]
 
 
         if not lazy:
