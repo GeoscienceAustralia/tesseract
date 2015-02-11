@@ -14,49 +14,94 @@ def load_full_tile(item, lazy=True):
                 lon_start=item[u'lon_start'], lon_end=item[u'lon_start']+item[u'lon_extent'], lazy=lazy)
 
 
-def load_partial_tile(item, lat_start, lat_end, lon_start, lon_end, lazy=True):
+def load_partial_tile(item, lat_start, lat_end, lon_start, lon_end, bands, lazy=True):
     # TODO Hardcoded bands
-    return Tile2(origin_id=item, bands=6, lat_start=lat_start, lat_end=lat_end,
+    return Tile2(origin_id=item, bands=bands, lat_start=lat_start, lat_end=lat_end,
                  lon_start=lon_start, lon_end=lon_end, lazy=lazy)
 
                  
-def drill_tiles(cursor, lat, lon, product, band):
-    # TODO Hardcoded bands
+def drill_tile_complete(item, lat_start, lat_end, lon_start, lon_end, bands, nan_value=-999):
 
+    tile = load_partial_tile(item, lat_start, lat_end, lon_start, lon_end, bands, lazy=False)
+
+    covered_area = np.ma.masked_equal(tile.array, nan_value)
+    composite_array = covered_area
+
+    if covered_area.count() > 0:
+        
+        pixels_left = covered_area.mask
+        next_tile = tile
+        while np.count_nonzero(pixels_left) > 0:
+            initial_pixels_left = np.count_nonzero(pixels_left)
+            next_tile = next_tile.traverse_time(-1)
+            next_covered_area = np.ma.masked_equal(next_tile.array, nan_value)
+            pixels_left = np.logical_and(pixels_left, next_covered_area.mask)
+            
+            if np.count_nonzero(pixels_left) < initial_pixels_left:
+                composite_array = np.ma.array(np.dstack((composite_array, next_covered_area)), mask=np.dstack((composite_array.mask, next_covered_area.mask)))
+                composite_array = np.prod(composite_array[0], axis=1)
+
+    return composite_array
+
+
+def drill_pixel_tile2(cursor, lat, lon, product, band):
+    # TODO Hardcoded bands
     tiles = []
     year_file = None
     dfile = None
-
     for item in cursor:
         item_year = item[u'time'].year
         if item_year != year_file:
             if dfile is not None:
-                print "closed!"
                 dfile.close()
-
             dfile = h5py.File(DATA_PATH + "{0}_{1:03d}_{2:04d}_{3}.nc".format("LS5_TM",
                                                                int(item[u'lon_start']),
                                                                int(item[u'lat_start']),
                                                                item[u'time'].year), 'r')
-       
+
             year_file = item_year
- 
-        tiles.append(Tile2(origin_id=item, bands=6, lat_start=lat, lat_end=lat,
-                     lon_start=lon, lon_end=lon, array=None, lazy=True, file_pointer=dfile))
+        tiles.append(Tile2(origin_id=item, bands=[0,1,3,4,5], lat_start=lat, lat_end=lat,
+                    lon_start=lon, lon_end=lon, array=None, lazy=True, f_pointer=dfile))
+    
+    return tiles
+
+
+def drill_pixel_tile(cursor, lat, lon, product, band):
+    # TODO Hardcoded bands
+    # TODO Year aggregation optimization
+
+    tiles = []
+
+    for item in cursor:
+        tiles.append(Tile2(origin_id=item, bands=[0,1,3,4,5], lat_start=lat, lat_end=lat,
+                     lon_start=lon, lon_end=lon, array=None, lazy=False))
 
     return tiles
+
+
+def drill_pixel_tile_parallel(queue, cursor, lat, lon, product, band):
+    # TODO Hardcoded bands
+    # TODO Year aggregation optimization
+
+    tiles = []
+
+    for item in cursor:
+        tiles.append(Tile2(origin_id=item, bands=[0,1,3,4,5], lat_start=lat, lat_end=lat,
+                     lon_start=lon, lon_end=lon, array=None, lazy=False))
+
+    queue.put(tiles)
 
 
 class Tile2(object):
 
     # Consider integrating satellite information inside id_object
     def __init__(self, origin_id=None, bands=None, lat_start=None, lat_end=None,
-                 lon_start=None, lon_end=None, array =None, lazy=True, file_pointer=None):
+                 lon_start=None, lon_end=None, array =None, lazy=True, f_pointer=None):
 
         self.origin_id = origin_id
         # TODO Hardcoded satellite (Should come with origin_id)
         self.origin_id["satellite"] = "LS5_TM"
-
+        
         orig_y_dim = get_geo_dim(origin_id["lat_start"], origin_id["lat_extent"], origin_id["pixel_size"])
         orig_x_dim = get_geo_dim(origin_id["lon_start"], origin_id["lon_extent"], origin_id["pixel_size"])
 
@@ -73,12 +118,17 @@ class Tile2(object):
 
         self.y_dim = get_geo_dim(corr_lat_start, corr_lat_end-corr_lat_start+self.origin_id["pixel_size"], self.origin_id["pixel_size"])
         self.x_dim = get_geo_dim(corr_lon_start, corr_lon_end-corr_lon_start+self.origin_id["pixel_size"], self.origin_id["pixel_size"])
-        self.band_dim = np.arange(0,bands,1)+1
+
+        self.bands = bands
+        if type(bands) is int: 
+            self.band_dim = np.arange(0,1,1)+1
+        elif type(bands) is list: 
+            self.band_dim = np.arange(0,len(bands),1)+1
+        else:
+            #TODO throw exception
+            pass 
+
         self.array = None
-
-        if file_pointer is not None:
-                self.array = file_pointer[self.origin_id["product"]][self.timestamp][lat1:lat2, lon1:lon2, 0:6]
-
 
         if not lazy:
             with h5py.File(DATA_PATH + "{0}_{1:03d}_{2:04d}_{3}.nc".format(self.origin_id["satellite"],
@@ -86,8 +136,12 @@ class Tile2(object):
                                                                int(self.origin_id[u'lat_start']),
                                                                self.origin_id[u'time'].year), 'r') as dfile:
                 
+                self.array = dfile[self.origin_id["product"]][self.timestamp][lat1:lat2, lon1:lon2, bands]
+                #print lat1,lat2,lon1,lon2,bands
+        
+        if f_pointer is not None:
+                self.array = f_pointer[self.origin_id["product"]][self.timestamp][lat1:lat2, lon1:lon2, bands]
 
-                self.array = dfile[self.origin_id["product"]][self.timestamp].value[lat1:lat2, lon1:lon2]
 
     def __getitem__(self, index):
         # TODO: Properly implement band dimension
@@ -164,8 +218,8 @@ class Tile2(object):
         item = cursor[abs(position)]
 	
         if item is not None:
-            return Tile2(origin_id=item, bands=6, lat_start=self.y_dim[0], lat_end=self.y_dim[-1],
-                 lon_start=self.x_dim[0], lon_end=self.x_dim[-1], lazy=True)
+            return Tile2(origin_id=item, bands=self.bands, lat_start=self.y_dim[0], lat_end=self.y_dim[-1],
+                 lon_start=self.x_dim[0], lon_end=self.x_dim[-1], lazy=False)
 
         else:
             return None 

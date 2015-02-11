@@ -1,8 +1,9 @@
+import time
 from datetime import datetime
 import numpy as np
 import pandas as pd
 from collections import OrderedDict, namedtuple
-from tile2 import Tile2, load_partial_tile, drill_tiles
+from tile2 import Tile2, load_partial_tile, drill_pixel_tile, drill_pixel_tile_parallel, drill_tile_complete
 from math import floor
 from utils import get_geo_dim
 # import only for test plotting
@@ -11,6 +12,8 @@ import matplotlib.pyplot as plt
 #from matplotlib import cm
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 from pymongo import Connection
+
+from multiprocessing import Process, Manager
 
 def load_data(prod, min_lat, max_lat, min_lon, max_lon, time_start, time_end, lazy=True):
 
@@ -42,15 +45,22 @@ def get_snapshot(prod, min_lat, max_lat, min_lon, max_lon, time, lazy=True):
             
             if cursor.count(with_limit_and_skip = True) == 1:
                 item = cursor[0]
-                tiles.append(load_partial_tile(item, min_lat, max_lat, min_lon, max_lon, lazy=lazy))
-                print lat, lon, item[u'time']
+                partial_image = drill_tile_complete(item, min_lat, max_lat, min_lon, max_lon, 0)
     
-    return DataCube(tiles)
-
+    print "---------------" 
+    print partial_image.shape
+    print "---------------" 
 
 def get_timeseries(product, lat, lon, time_start, time_end, band, nan_value=-999):
+    
+    conn = Connection('128.199.74.80', 27017)
+    db = conn["datacube"]
 
-    tiles = _pixel_drill(product, lat, lon, time_start, time_end, band)
+    cursor = db.index.find({"product": product, "lat_start": int(floor(lat)), "lon_start": int(floor(lon)),
+                             "time": {"$gte": time_start, "$lt": time_end}}).sort("time", 1)
+
+
+    tiles = drill_pixel_tile(cursor, lat, lon, product, band)
     
     ts_data = [] 
     for tile in tiles:
@@ -60,24 +70,64 @@ def get_timeseries(product, lat, lon, time_start, time_end, band, nan_value=-999
             ts_data.append(tuple(filt_array))
    
     return pd.DataFrame(ts_data)
+
+
+def get_timeseries_parallel(product, lat, lon, time_start, time_end, band, nan_value=-999):
     
-
-
-def _pixel_drill(product, lat, lon, time_start, time_end, band):
-
     conn = Connection('128.199.74.80', 27017)
     db = conn["datacube"]
 
-    print "index sent"
     cursor = db.index.find({"product": product, "lat_start": int(floor(lat)), "lon_start": int(floor(lon)),
                              "time": {"$gte": time_start, "$lt": time_end}}).sort("time", 1)
-    print "index returned"
 
-    tiles = drill_tiles(cursor, lat, lon, product, band)
+    processes = []
+    manager = Manager()
+    queue = manager.Queue()
+    
+    chunk = []
+    max_chunk = 200
+    print cursor.count()
 
-    #return DataCube(tiles)
-    return tiles
+    counter = 0
 
+    print("Total size: {}".format(cursor.count()))
+
+    for item in cursor:
+        counter += 1
+        chunk.append(item)
+        if len(chunk) == max_chunk:
+            p = Process(target=drill_pixel_tile_parallel, args=(queue, chunk, lat, lon, product, band))
+            processes.append(p)
+            p.start()
+            print("Sent to process chunk: {}".format(counter))
+            counter = 0
+            chunk = []
+
+    if len(chunk) > 0:
+        p = Process(target=drill_pixel_tile_parallel, args=(queue, chunk, lat, lon, product, band))
+        processes.append(p)
+        p.start()
+        print("Final: Sent to process chunk: {}".format(counter))
+        counter = 0
+        chunk = []
+
+
+    for p in processes:
+        p.join()
+
+    tiles = []
+    for _ in processes:
+        tiles = tiles + queue.get()
+
+
+    ts_data = [] 
+    for tile in tiles:
+        filt_array = [None if x==nan_value else x for x in tile.array[0][0]]
+        if all(filt_array):
+            filt_array = [tile.origin_id[u'time']] + filt_array
+            ts_data.append(tuple(filt_array))
+   
+    return pd.DataFrame(ts_data)
 
 class DataCube(object):
     
@@ -192,10 +242,44 @@ class DataCube(object):
 
     
 if __name__ == "__main__":
-    
+    """    
     time1 = datetime.strptime("1982-08-01T00:00:00.000Z", '%Y-%m-%dT%H:%M:%S.%fZ')
     time2 = datetime.strptime("2011-08-01T00:00:00.000Z", '%Y-%m-%dT%H:%M:%S.%fZ')
+    product = "NBAR"
     
-    ts = get_timeseries("NBAR", -32.495, 126.532, time1, time2, 6)
-    print ts
-    print ts.head
+    start = time.time()
+    print get_timeseries_parallel(product, -31.343, 121.2345, time1, time2, 4, nan_value=-999).head(2)
+    stop = time.time()
+    print stop-start
+    start = time.time()
+    print get_timeseries_parallel(product, -31.343, 122.2345, time1, time2, 4, nan_value=-999).head(2)
+    stop = time.time()
+    print stop-start
+    start = time.time()
+    print get_timeseries_parallel(product, -31.343, 123.2345, time1, time2, 4, nan_value=-999).head(2)
+    stop = time.time()
+    print stop-start
+    start = time.time()
+    print get_timeseries_parallel(product, -31.343, 124.2345, time1, time2, 4, nan_value=-999).head(2)
+    stop = time.time()
+    print stop-start
+    start = time.time()
+    print get_timeseries_parallel(product, -31.343, 125.2345, time1, time2, 4, nan_value=-999).head(2)
+    stop = time.time()
+    print stop-start
+    start = time.time()
+    print get_timeseries_parallel(product, -31.343, 126.2345, time1, time2, 4, nan_value=-999).head(2)
+    stop = time.time()
+    print stop-start
+    start = time.time()
+    print get_timeseries_parallel(product, -31.343, 127.2345, time1, time2, 4, nan_value=-999).head(2)
+    stop = time.time()
+    print stop-start
+    start = time.time()
+    print get_timeseries_parallel(product, -31.343, 128.2345, time1, time2, 4, nan_value=-999).head(2)
+    stop = time.time()
+    print stop-start
+    start = time.time()
+    """
+    
+print get_snapshot("NBAR", -30.636, -30.136, 121.232, 125.232, 0)
