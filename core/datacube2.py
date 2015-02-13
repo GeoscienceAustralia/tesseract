@@ -37,15 +37,26 @@ def get_snapshot(prod, min_lat, max_lat, min_lon, max_lon, time, lazy=True):
 
     conn = Connection('128.199.74.80', 27017)
     db = conn["datacube"]
+    
+    partial_image = None
 
-    tiles = []
     for lat in lats:
+        image_row = None
         for lon in lons:
             cursor = db.index.find({"product": prod, "lat_start": lat, "lon_start": lon}).sort("time", -1).limit(1)
             
             if cursor.count(with_limit_and_skip = True) == 1:
                 item = cursor[0]
-                partial_image = drill_tile_complete(item, min_lat, max_lat, min_lon, max_lon, 0)
+
+                if image_row is None:
+                    image_row = drill_tile_complete(item, min_lat, max_lat, min_lon, max_lon, 0)
+                else:    
+                    image_row = np.hstack(partial_image ,drill_tile_complete(item, min_lat, max_lat, min_lon, max_lon, 0))
+                
+        if partial_image is None:
+                partial_image = image_row
+        else:    
+                partial_image = np.vstack(partial_image ,image_row)
     
     print "---------------" 
     print partial_image.shape
@@ -282,4 +293,4 @@ if __name__ == "__main__":
     start = time.time()
     """
     
-print get_snapshot("NBAR", -30.636, -30.136, 121.232, 125.232, 0)
+print get_snapshot("NBAR", -30.636, -30.136, 121.232, 123.232, 0)

@@ -131,6 +131,10 @@ class Tile2(object):
         self.array = None
 
         if not lazy:
+            print (DATA_PATH + "{0}_{1:03d}_{2:04d}_{3}.nc".format(self.origin_id["satellite"],
+                                                               int(self.origin_id[u'lon_start']),
+                                                               int(self.origin_id[u'lat_start']),
+                                                               self.origin_id[u'time'].year))
             with h5py.File(DATA_PATH + "{0}_{1:03d}_{2:04d}_{3}.nc".format(self.origin_id["satellite"],
                                                                int(self.origin_id[u'lon_start']),
                                                                int(self.origin_id[u'lat_start']),
