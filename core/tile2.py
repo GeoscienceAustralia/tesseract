@@ -25,8 +25,37 @@ def drill_tile_complete(item, lat_start, lat_end, lon_start, lon_end, bands, nan
     tile = load_partial_tile(item, lat_start, lat_end, lon_start, lon_end, bands, lazy=False)
 
     covered_area = np.ma.masked_equal(tile.array, nan_value)
+
+    print (np.count_nonzero(covered_area) - covered_area.count())
+    print np.count_nonzero(covered_area)
+    print covered_area.count()
+    print covered_area.shape
+    
+    while (np.count_nonzero(covered_area) - covered_area.count()) > 0:
+        tile = tile.traverse_time(-1)
+        next_covered_area = np.ma.masked_equal(tile.array, nan_value)
+        print "----%----"
+        if next_covered_area.mask.all() == False: 
+            next_covered_area.mask = np.zeros(next_covered_area.shape)
+        np.dstack((covered_area, next_covered_area))
+        covered_area = np.ma.array(np.dstack((covered_area, next_covered_area)), mask=np.dstack((covered_area.mask, next_covered_area.mask)))
+        covered_area = np.prod(covered_area, axis=2)
+        print (np.count_nonzero(covered_area) - covered_area.count())
+        print np.count_nonzero(covered_area)
+        print covered_area.count()
+        print covered_area.shape
+    
+    return covered_area.data
+
+
+def drill_tile_complete2(item, lat_start, lat_end, lon_start, lon_end, bands, nan_value=-999):
+
+    tile = load_partial_tile(item, lat_start, lat_end, lon_start, lon_end, bands, lazy=False)
+
+    covered_area = np.ma.masked_equal(tile.array, nan_value)
     composite_array = covered_area
 
+    print covered_area
     if covered_area.count() > 0:
         
         pixels_left = covered_area.mask
@@ -38,10 +67,16 @@ def drill_tile_complete(item, lat_start, lat_end, lon_start, lon_end, bands, nan
             pixels_left = np.logical_and(pixels_left, next_covered_area.mask)
             
             if np.count_nonzero(pixels_left) < initial_pixels_left:
+                print "Antes"
+                print composite_array.shape
+                print next_covered_area.shape
+                np.dstack((composite_array, next_covered_area))
+                np.dstack((composite_array.mask, next_covered_area.mask))
+                print "Despues"
                 composite_array = np.ma.array(np.dstack((composite_array, next_covered_area)), mask=np.dstack((composite_array.mask, next_covered_area.mask)))
                 composite_array = np.prod(composite_array[0], axis=1)
 
-    return composite_array
+    return composite_array.data
 
 
 def drill_pixel_tile2(cursor, lat, lon, product, band):
@@ -222,14 +257,16 @@ class Tile2(object):
         item = cursor[abs(position)]
 	
         if item is not None:
-            return Tile2(origin_id=item, bands=self.bands, lat_start=self.y_dim[0], lat_end=self.y_dim[-1],
-                 lon_start=self.x_dim[0], lon_end=self.x_dim[-1], lazy=False)
+            return load_partial_tile(item, self.y_dim[0], self.y_dim[-1], self.x_dim[0], self.x_dim[-1], self.bands, lazy=False)
+            #return load_partial_tile(origin_id=item, bands=self.bands, lat_start=self.y_dim[0], lat_end=self.y_dim[-1],
+            #     lon_start=self.x_dim[0], lon_end=self.x_dim[-1], lazy=False)
 
         else:
+            print "ohhh"
             return None 
 
 if __name__ == "__main__":
-
+    
     conn = Connection('128.199.74.80', 27017)
     db = conn["datacube"]
 
@@ -238,13 +275,4 @@ if __name__ == "__main__":
     
     item = db.index.find_one({"product": "NBAR", "lat_start": -34, "lon_start": 121, "time": {"$gte": time1, "$lt": time2}})
 
-    tile = load_partial_tile(item, -33.83333333, -33.333333, 80, 130, lazy=False)
-    print tile.dims
-    print tile.array.shape
-    print tile.shape
-
-    tile2 = tile[-33.66666666:-33.40, 121.2:121.8]
-    print "-33.66666666:-33.40, 121.2:121.8"
-    print tile2.dims
-    print tile2.array.shape
-    print tile2.shape
+    drill_tile_complete(item, -33.8, -33.5, 121.2, 121.7, 1, -999)
