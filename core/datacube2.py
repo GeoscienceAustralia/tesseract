@@ -43,7 +43,6 @@ def get_snapshot(prod, min_lat, max_lat, min_lon, max_lon, time, lazy=True):
     for lat in lats:
         image_row = None
         for lon in lons:
-            print lat, lon
             cursor = db.index.find({"product": prod, "lat_start": lat, "lon_start": lon}).sort("time", -1).limit(1)
             
             if cursor.count(with_limit_and_skip = True) == 1:
@@ -52,22 +51,17 @@ def get_snapshot(prod, min_lat, max_lat, min_lon, max_lon, time, lazy=True):
                 tile_complete = drill_tile_complete(item, min_lat, max_lat, min_lon, max_lon, 0)
                 if image_row is None:
                     image_row = tile_complete
+               
                 else:    
-                    print("Horizontal stack: {}, {}".format(image_row.shape, tile_complete.shape))
                     image_row = np.hstack((image_row, tile_complete))
-                
+        
         if partial_image is None:
                 partial_image = image_row
         else:    
-                print("Vertical stack: {}, {}".format(partial_image.shape, image_row.shape))
                 partial_image = np.vstack(partial_image ,image_row)
     
-    print "---------------" 
-    print partial_image.shape
-    print type(partial_image)
-    print "---------------" 
-
     return partial_image
+
 
 def get_timeseries(product, lat, lon, time_start, time_end, band, nan_value=-999):
     
