@@ -58,7 +58,7 @@ def get_snapshot(prod, min_lat, max_lat, min_lon, max_lon, time, lazy=True):
         if partial_image is None:
                 partial_image = image_row
         else:    
-                partial_image = np.vstack(partial_image ,image_row)
+                partial_image = np.vstack((partial_image ,image_row))
     
     return partial_image
 
@@ -294,4 +294,4 @@ if __name__ == "__main__":
     start = time.time()
     """
     
-print get_snapshot("NBAR", -30.636, -30.136, 121.232, 123.232, 0)
+print get_snapshot("NBAR", -32.636, -30.136, 121.232, 123.232, 0)
