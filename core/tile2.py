@@ -6,7 +6,9 @@ from pymongo import Connection
 import h5py
 
 # CONSTANTS
-DATA_PATH = "/g/data1/v10/HPCData/"
+DATA_PATH = "/g/data1/rs0/tiles/EPSG4326_1deg_0.00025pixel_netcdf/HPCData/"
+
+mongo_ip = 'localhost'
 
 def load_full_tile(item, lazy=True):
     # TODO Hardcoded bands
@@ -50,7 +52,7 @@ def drill_pixel_tile2(cursor, lat, lon, product, band):
         if item_year != year_file:
             if dfile is not None:
                 dfile.close()
-            dfile = h5py.File(DATA_PATH + "{0}_{1:03d}_{2:04d}_{3}.nc".format("LS5_TM",
+            dfile = h5py.File(DATA_PATH + "{0}_{1:03d}_{2:04d}_{3}.h5".format("LS5_TM",
                                                                int(item[u'lon_start']),
                                                                int(item[u'lat_start']),
                                                                item[u'time'].year), 'r')
@@ -69,7 +71,7 @@ def drill_pixel_tile(cursor, lat, lon, product, band):
     tiles = []
 
     for item in cursor:
-        tiles.append(Tile2(origin_id=item, bands=[0,1,3,4,5], lat_start=lat, lat_end=lat,
+        tiles.append(Tile2(origin_id=item, bands=band, lat_start=lat, lat_end=lat,
                      lon_start=lon, lon_end=lon, array=None, lazy=False))
 
     return tiles
@@ -82,7 +84,7 @@ def drill_pixel_tile_parallel(queue, cursor, lat, lon, product, band):
     tiles = []
 
     for item in cursor:
-        tiles.append(Tile2(origin_id=item, bands=[0,1,3,4,5], lat_start=lat, lat_end=lat,
+        tiles.append(Tile2(origin_id=item, bands=band, lat_start=lat, lat_end=lat,
                      lon_start=lon, lon_end=lon, array=None, lazy=False))
 
     queue.put(tiles)
@@ -127,16 +129,14 @@ class Tile2(object):
         self.array = None
 
         if not lazy:
-            print (DATA_PATH + "{0}_{1:03d}_{2:04d}_{3}.nc".format(self.origin_id["satellite"],
-                                                               int(self.origin_id[u'lon_start']),
-                                                               int(self.origin_id[u'lat_start']),
-                                                               self.origin_id[u'time'].year))
-            with h5py.File(DATA_PATH + "{0}_{1:03d}_{2:04d}_{3}.nc".format(self.origin_id["satellite"],
+            with h5py.File(DATA_PATH + "{0}_{1:03d}_{2:04d}_{3}.h5".format(self.origin_id["satellite"],
                                                                int(self.origin_id[u'lon_start']),
                                                                int(self.origin_id[u'lat_start']),
                                                                self.origin_id[u'time'].year), 'r') as dfile:
-                
-                self.array = dfile[self.origin_id["product"]][self.timestamp][lat1:lat2, lon1:lon2, bands]
+                if len(dfile[self.origin_id["product"]][self.timestamp].shape) == 3:
+                    self.array = dfile[self.origin_id["product"]][self.timestamp][lat1:lat2, lon1:lon2, bands]
+                else: 
+                    self.array = dfile[self.origin_id["product"]][self.timestamp][lat1:lat2, lon1:lon2]
                 #print lat1,lat2,lon1,lon2,bands
         
         if f_pointer is not None:
@@ -204,7 +204,8 @@ class Tile2(object):
 
     def traverse_time(self, position=1):
 
-        conn = Connection('128.199.74.80', 27017)
+        conn = Connection(mongo_ip, 27017)
+
         db = conn["datacube"]
 
 
@@ -228,14 +229,14 @@ class Tile2(object):
 
 if __name__ == "__main__":
     
-    conn = Connection('128.199.74.80', 27017)
+    conn = Connection(mongo_ip, 27017)
     db = conn["datacube"]
 
     time1 = datetime.strptime("2006-01-01T00:00:00.000Z", '%Y-%m-%dT%H:%M:%S.%fZ')
     time2 = datetime.strptime("2007-01-01T00:00:00.000Z", '%Y-%m-%dT%H:%M:%S.%fZ')
     
-    item = db.index.find_one({"product": "NBAR", "lat_start": -34, "lon_start": 121, "time": {"$gte": time1, "$lt": time2}})
+    item = db.index.find_one({"product": "NBAR", "lat_start": -30, "lon_start": 121, "time": {"$gte": time1, "$lt": time2}})
 
-    tile =  drill_tile_complete(item, -33.8, -33.5, 121.2, 121.7, 1, -999)
+    tile =  drill_tile_complete(item, -30.8, -30.5, 121.2, 121.7, 1, -999)
     print tile 
     print np.count_nonzero(np.ma.masked_equal(tile, -999))

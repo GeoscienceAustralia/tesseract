@@ -15,9 +15,11 @@ from pymongo import Connection
 
 from multiprocessing import Process, Manager
 
+mongo_ip = 'localhost'
+
 def load_data(prod, min_lat, max_lat, min_lon, max_lon, time_start, time_end, lazy=True):
 
-    conn = Connection('128.199.74.80', 27017)
+    conn = Connection(mongo_ip, 27017)
     db = conn["datacube"]
 
     cursor = db.index.find({"product": prod, "lat_start": {"$gte": int(floor(min_lat)), "$lte": int(floor(max_lat))},
@@ -35,7 +37,7 @@ def get_snapshot(prod, min_lat, max_lat, min_lon, max_lon, time, lazy=True):
     lats = np.arange(floor(min_lat), floor(max_lat)+1)  
     lons = np.arange(floor(min_lon), floor(max_lon)+1)  
 
-    conn = Connection('128.199.74.80', 27017)
+    conn = Connection(mongo_ip, 27017)
     db = conn["datacube"]
     
     partial_image = None
@@ -65,28 +67,33 @@ def get_snapshot(prod, min_lat, max_lat, min_lon, max_lon, time, lazy=True):
 
 def get_timeseries(product, lat, lon, time_start, time_end, band, nan_value=-999):
     
-    conn = Connection('128.199.74.80', 27017)
+    conn = Connection(mongo_ip, 27017)
     db = conn["datacube"]
 
     cursor = db.index.find({"product": product, "lat_start": int(floor(lat)), "lon_start": int(floor(lon)),
                              "time": {"$gte": time_start, "$lt": time_end}}).sort("time", 1)
-
-
     tiles = drill_pixel_tile(cursor, lat, lon, product, band)
     
-    ts_data = [] 
-    for tile in tiles:
-        filt_array = [None if x==nan_value else x for x in tile.array[0][0]]
-        if all(filt_array):
-            filt_array = [tile.origin_id[u'time']] + filt_array
-            ts_data.append(tuple(filt_array))
+    ts_data = []
+    if len(tiles[0].array.shape) == 3:
+        for tile in tiles:
+            filt_array = [None if x==nan_value else x for x in tile.array[0][0]]
+            if all(filt_array):
+                filt_array = [tile.origin_id[u'time']] + filt_array
+                ts_data.append(tuple(filt_array))
+    else: 
+        for tile in tiles:
+            filt_array = [None if x==nan_value else x for x in tile.array[0]]
+            if all(filt_array):
+                filt_array = [tile.origin_id[u'time']] + filt_array
+                ts_data.append(tuple(filt_array))
    
     return pd.DataFrame(ts_data)
 
 
 def get_timeseries_parallel(product, lat, lon, time_start, time_end, band, nan_value=-999):
     
-    conn = Connection('128.199.74.80', 27017)
+    conn = Connection(mongo_ip, 27017)
     db = conn["datacube"]
 
     cursor = db.index.find({"product": product, "lat_start": int(floor(lat)), "lon_start": int(floor(lon)),
@@ -98,11 +105,7 @@ def get_timeseries_parallel(product, lat, lon, time_start, time_end, band, nan_v
     
     chunk = []
     max_chunk = 200
-    print cursor.count()
-
     counter = 0
-
-    print("Total size: {}".format(cursor.count()))
 
     for item in cursor:
         counter += 1
@@ -111,7 +114,6 @@ def get_timeseries_parallel(product, lat, lon, time_start, time_end, band, nan_v
             p = Process(target=drill_pixel_tile_parallel, args=(queue, chunk, lat, lon, product, band))
             processes.append(p)
             p.start()
-            print("Sent to process chunk: {}".format(counter))
             counter = 0
             chunk = []
 
@@ -119,7 +121,6 @@ def get_timeseries_parallel(product, lat, lon, time_start, time_end, band, nan_v
         p = Process(target=drill_pixel_tile_parallel, args=(queue, chunk, lat, lon, product, band))
         processes.append(p)
         p.start()
-        print("Final: Sent to process chunk: {}".format(counter))
         counter = 0
         chunk = []
 
@@ -133,11 +134,18 @@ def get_timeseries_parallel(product, lat, lon, time_start, time_end, band, nan_v
 
 
     ts_data = [] 
-    for tile in tiles:
-        filt_array = [None if x==nan_value else x for x in tile.array[0][0]]
-        if all(filt_array):
-            filt_array = [tile.origin_id[u'time']] + filt_array
-            ts_data.append(tuple(filt_array))
+    if len(tiles[0].array.shape) == 3:
+        for tile in tiles:
+            filt_array = [None if x==nan_value else x for x in tile.array[0][0]]
+            if all(filt_array):
+                filt_array = [tile.origin_id[u'time']] + filt_array
+                ts_data.append(tuple(filt_array))
+    else: 
+        for tile in tiles:
+            filt_array = [None if x==nan_value else x for x in tile.array[0]]
+            if all(filt_array):
+                filt_array = [tile.origin_id[u'time']] + filt_array
+                ts_data.append(tuple(filt_array))
    
     return pd.DataFrame(ts_data)
 
@@ -254,15 +262,16 @@ class DataCube(object):
 
     
 if __name__ == "__main__":
-    """    
     time1 = datetime.strptime("1982-08-01T00:00:00.000Z", '%Y-%m-%dT%H:%M:%S.%fZ')
     time2 = datetime.strptime("2011-08-01T00:00:00.000Z", '%Y-%m-%dT%H:%M:%S.%fZ')
-    product = "NBAR"
+    product = "PQA"
+    #product = "NBAR"
     
     start = time.time()
-    print get_timeseries_parallel(product, -31.343, 121.2345, time1, time2, 4, nan_value=-999).head(2)
+    print get_timeseries(product, -31.343, 121.2345, time1, time2, [1], nan_value=-999).head(2)
     stop = time.time()
     print stop-start
+    """ 
     start = time.time()
     print get_timeseries_parallel(product, -31.343, 122.2345, time1, time2, 4, nan_value=-999).head(2)
     stop = time.time()
@@ -293,5 +302,3 @@ if __name__ == "__main__":
     print stop-start
     start = time.time()
     """
-    
-print get_snapshot("NBAR", -32.636, -30.136, 121.232, 123.232, 0)
