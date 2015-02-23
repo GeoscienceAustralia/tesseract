@@ -123,4 +123,5 @@ if __name__ == "__main__":
 
     df = df_fc.join(df_wofs)
     #print df.to_json(date_format='iso', orient='records')
-    print df.dropna(axis=1, how='any', inplace=True).head(5)
+    df.dropna(how='any', inplace=True)
+    print df.head(5)
