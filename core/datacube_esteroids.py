@@ -101,11 +101,11 @@ def pixel_drill(product=None, t1=None, t2=None, x=None, y=None):
     return df
 
 
-def test_pixel_drill(prods=None, t1=None, t2=None, x=None, y=None):
+def test_pixel_drill(products=None, t1=None, t2=None, x=None, y=None):
 
     df = pd.DataFrame()
 
-    for prod in prods:
+    for prod in products:
         df_prod = pixel_drill(product=prod, t1=t1, t2=t2, x=x, y=y)
         df = df.join(df_prod)
 
@@ -129,6 +129,6 @@ if __name__ == "__main__":
     time1 = datetime.strptime(args.start_date, '%Y-%m-%dT%H:%M:%S.%fZ')
     time2 = datetime.strptime(args.end_date, '%Y-%m-%dT%H:%M:%S.%fZ')
 
-    test_pixel_drill(product=["WOFS", "FC"], t1=time1, t2=time2, x=args.start_x, y=args.start_y)
+    test_pixel_drill(products=["WOFS", "FC"], t1=time1, t2=time2, x=args.start_x, y=args.start_y)
 
 
