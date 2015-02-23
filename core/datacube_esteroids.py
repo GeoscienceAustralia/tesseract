@@ -101,12 +101,12 @@ def pixel_drill(product=None, t1=None, t2=None, x=None, y=None):
     return df
 
 
-def test_pixel_drill(prods=None, t1=time1, t2=time2, x=args.start_x, y=args.start_y):
+def test_pixel_drill(prods=None, t1=None, t2=None, x=None, y=None):
 
     df = pd.DataFrame()
 
     for prod in prods:
-        df_prod = pixel_drill(product=prod, t1=time1, t2=time2, x=args.start_x, y=args.start_y)
+        df_prod = pixel_drill(product=prod, t1=t1, t2=t2, x=x, y=y)
         df = df.join(df_prod)
 
     df.dropna(how='any', inplace=True)
