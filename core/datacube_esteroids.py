@@ -96,6 +96,26 @@ def _indexer(root=None, product=None, t1=None, t2=None, x1=None, x2=None, y1=Non
 def get_index(value, dimension):
     return np.abs(dimension-value).argmin()
 
+
+def pixel_drill(product=None, t1=None, t2=None, x=None, y=None):
+
+    cubes = create_datacube(product=product, t1=t1, t2=t2, x1=x, x2=x+.00025, y1=y, y2=y+.00025)
+
+    dfs = []
+    for cube in cubes:
+        index = map(datetime.fromtimestamp, cube.t_dim)
+        #dfs.append(pd.DataFrame.from_records(np.squeeze(cube.array), index=index, columns=["A", "B", "C", "D"]))
+        dfs.append(pd.DataFrame(np.squeeze(cube.array), index=index))
+
+    df = pd.concat(dfs)
+    df["index"] = df.index
+    df = df.drop_duplicates(cols='index')
+    df = df.drop("index", 1)
+
+    return df
+
+
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="""Pixel Drill argument parser""")
@@ -113,35 +133,14 @@ if __name__ == "__main__":
     time1 = datetime.strptime(args.start_date, '%Y-%m-%dT%H:%M:%S.%fZ')
     time2 = datetime.strptime(args.end_date, '%Y-%m-%dT%H:%M:%S.%fZ')
 
-    cubes = create_datacube(product="WOFS", t1=time1, t2=time2, x1=args.start_x, x2=args.start_x+.00025, y1=args.start_y, y2=args.start_y+.00025)
+    #cubes = create_datacube(product="WOFS", t1=time1, t2=time2, x1=args.start_x, x2=args.start_x+.00025, y1=args.start_y, y2=args.start_y+.00025)
 
-    dfs = []
-    for cube in cubes:
-        index = map(datetime.fromtimestamp, cube.t_dim)
-        dfs.append(pd.DataFrame(np.squeeze(cube.array), index=index, columns=["E"]))
-        #dfs.append(pd.DataFrame.from_records(np.squeeze(cube.array), index=index, columns=["A"]))
-   
-    df_wofs = pd.concat(dfs)
-    df_wofs["index"] = df_wofs.index 
-    df_wofs = df_wofs.drop_duplicates(cols='index')
-    df_wofs = df_wofs.drop("index", 1)
-    #print df_wofs.to_json(date_format='iso')
-    print df_wofs.shape
+    df_wofs = pixel_drill(product="WOFS", t1=time1, t2=time2, x=args.start_x, y=args.start_y)
+    df_fc = pixel_drill(product="FC", t1=time1, t2=time2, x=args.start_x, y=args.start_y)
 
-    cubes = create_datacube(product="FC", t1=time1, t2=time2, x1=args.start_x, x2=args.start_x+.00025, y1=args.start_y, y2=args.start_y+.00025)
-    
-    dfs = []
-    for cube in cubes:
-        index = map(datetime.fromtimestamp, cube.t_dim)
-        dfs.append(pd.DataFrame.from_records(np.squeeze(cube.array), index=index, columns=["A", "B", "C", "D"]))
-    
-    df_fc = pd.concat(dfs)
-    df_fc["index"] = df_fc.index 
-    df_fc = df_fc.drop_duplicates(cols='index')
-    df_fc = df_fc.drop("index", 1)
-    #print df_fc.to_json(date_format='iso', orient='records')
-    print df_fc.shape
+    print df_wofs.head(5)
+    print df_fc.head(5)
 
-    df = df_fc.join(df_wofs)
-    print df.to_json(date_format='iso', orient='records')
-    print df.shape
+    #df = df_fc.join(df_wofs)
+    #print df.to_json(date_format='iso', orient='records')
+    #print df.shape
