@@ -128,12 +128,8 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
         
-    #time1 = datetime.strptime("1985-08-01T00:00:00.000Z", '%Y-%m-%dT%H:%M:%S.%fZ')
-    #time2 = datetime.strptime("2016-09-01T00:00:00.000Z", '%Y-%m-%dT%H:%M:%S.%fZ')
     time1 = datetime.strptime(args.start_date, '%Y-%m-%dT%H:%M:%S.%fZ')
     time2 = datetime.strptime(args.end_date, '%Y-%m-%dT%H:%M:%S.%fZ')
-
-    #cubes = create_datacube(product="WOFS", t1=time1, t2=time2, x1=args.start_x, x2=args.start_x+.00025, y1=args.start_y, y2=args.start_y+.00025)
 
     df_wofs = pixel_drill(product="WOFS", t1=time1, t2=time2, x=args.start_x, y=args.start_y)
     df_fc = pixel_drill(product="FC", t1=time1, t2=time2, x=args.start_x, y=args.start_y)
@@ -141,6 +137,6 @@ if __name__ == "__main__":
     print df_wofs.head(5)
     print df_fc.head(5)
 
-    #df = df_fc.join(df_wofs)
+    df = df_fc.join(df_wofs)
     #print df.to_json(date_format='iso', orient='records')
-    #print df.shape
+    print df.head(5)
