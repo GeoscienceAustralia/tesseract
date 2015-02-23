@@ -31,51 +31,37 @@ def create_datacube(product=None, t1=None, t2=None, x1=None, x2=None, y1=None, y
         
         if os.path.isfile(file_name):
 
-            a = Datacube()
+            dc = Datacube()
 
             with h5py.File(file_name, 'r') as afile:
-                if len(afile[product].shape) == 3:
+
                     time_dim = afile[product].dims[0][0].value
                     x_dim = afile[product].dims[1][0].value
                     y_dim = afile[product].dims[2][0].value
+                    if len(afile[product].shape) == 3:
+                        band_dim = np.arange(1)
+                    elif len(afile[product].shape) == 4:
+                        band_dim = afile[product].dims[3][0].value
 
                     t1_i = get_index(time.mktime(t1.timetuple()), time_dim)
                     t2_i = get_index(time.mktime(t2.timetuple()), time_dim)
-                    a.t_dim = time_dim[t1_i:t2_i]
+                    dc.t_dim = time_dim[t1_i:t2_i]
 
                     x1_i = get_index(x1, x_dim)
                     x2_i = get_index(x2, x_dim)
-                    a.x_dim = x_dim[x1_i:x2_i]
+                    dc.x_dim = x_dim[x1_i:x2_i]
 
                     y1_i = get_index(y1, y_dim)
                     y2_i = get_index(y2, y_dim)
-                    a.y_dim = y_dim[y1_i:y2_i]
+                    dc.y_dim = y_dim[y1_i:y2_i]
 
-                    a.array = afile[product][t1_i:t2_i, x1_i:x2_i, y1_i:y2_i]
+                    #Select bands from input parameters
+                    dc.b_dim = band_dim
 
-                elif len(afile[product].shape) == 4: 
-                    time_dim = afile[product].dims[0][0].value
-                    x_dim = afile[product].dims[1][0].value
-                    y_dim = afile[product].dims[2][0].value
-                    band_dim = afile[product].dims[3][0].value    
-
-                    t1_i = get_index(time.mktime(t1.timetuple()), time_dim)
-                    t2_i = get_index(time.mktime(t2.timetuple()), time_dim)
-                    a.t_dim = time_dim[t1_i:t2_i]
-
-                    x1_i = get_index(x1, x_dim)
-                    x2_i = get_index(x2, x_dim)
-                    a.x_dim = x_dim[x1_i:x2_i]
-
-                    y1_i = get_index(y1, y_dim)
-                    y2_i = get_index(y2, y_dim)
-                    a.y_dim = y_dim[y1_i:y2_i]
-
-                    a.b_dim = band_dim
-
-                    a.array = afile[product][t1_i:t2_i, x1_i:x2_i, y1_i:y2_i, :]
+                    dc.array = afile[product][t1_i:t2_i, x1_i:x2_i, y1_i:y2_i]
+                    #dc.array = afile[product][t1_i:t2_i, x1_i:x2_i, y1_i:y2_i, :]
             
-            cubes.append(a)
+            cubes.append(dc)
 
     # Here comes the function to merge the cubes  
 
@@ -104,8 +90,8 @@ def pixel_drill(product=None, t1=None, t2=None, x=None, y=None):
     dfs = []
     for cube in cubes:
         index = map(datetime.fromtimestamp, cube.t_dim)
-        #dfs.append(pd.DataFrame.from_records(np.squeeze(cube.array), index=index, columns=["A", "B", "C", "D"]))
-        dfs.append(pd.DataFrame(np.squeeze(cube.array), index=index))
+        dfs.append(pd.DataFrame(np.squeeze(cube.array), index=index,
+                                columns=[product + '_' + i for i in range(cube.b_dim)]))
 
     df = pd.concat(dfs)
     df["index"] = df.index
@@ -113,8 +99,6 @@ def pixel_drill(product=None, t1=None, t2=None, x=None, y=None):
     df = df.drop("index", 1)
 
     return df
-
-
 
 if __name__ == "__main__":
 
