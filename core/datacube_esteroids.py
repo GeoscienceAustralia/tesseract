@@ -91,7 +91,7 @@ def pixel_drill(product=None, t1=None, t2=None, x=None, y=None):
     for cube in cubes:
         index = map(datetime.fromtimestamp, cube.t_dim)
         dfs.append(pd.DataFrame(np.squeeze(cube.array), index=index,
-                                columns=[product + '_' + i for i in range(cube.b_dim)]))
+                                columns=[product + '_' + i for i in cube.b_dim]))
 
     df = pd.concat(dfs)
     df["index"] = df.index
