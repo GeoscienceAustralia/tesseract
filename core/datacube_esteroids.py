@@ -107,13 +107,15 @@ def test_pixel_drill(products=None, t1=None, t2=None, x=None, y=None):
 
     for prod in products:
         df_prod = pixel_drill(product=prod, t1=t1, t2=t2, x=x, y=y)
+        print df_prod.head(10)
         if df is None:
             df = df_prod
         else:
             df = df.join(df_prod)
+    print df.head(10)
 
     df.dropna(how='any', inplace=True)
-    print df.head(5)
+    print df.head(5)   
     return df.to_json(date_format='iso', orient='records')
 
 
