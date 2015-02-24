@@ -104,25 +104,21 @@ def pixel_drill(product=None, t1=None, t2=None, x=None, y=None):
 def test_pixel_drill(products=None, t1=None, t2=None, x=None, y=None):
 
     df = None
-
     for prod in products:
         df_prod = pixel_drill(product=prod, t1=t1, t2=t2, x=x, y=y)
-        print df_prod.head(10)
         if df is None:
             df = df_prod
         else:
             df = df.join(df_prod)
-    print df.head(10)
 
     df.dropna(how='any', inplace=True)
-    print df.head(5)
+
     return df.to_json(date_format='iso', orient='records')
 
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="""Pixel Drill argument parser""")
-    
     parser.add_argument(dest="start_date", type=str, help="Pixel drill start date.")
     parser.add_argument(dest="end_date", type=str, help="Pixel drill end date.")
     parser.add_argument(dest="start_x", type=float, help="Pixel drill start x.")
@@ -136,4 +132,6 @@ if __name__ == "__main__":
 
     test_pixel_drill(products=["FC", "WOFS"], t1=time1, t2=time2, x=args.start_x, y=args.start_y)
 
+    #Test with
+    # time python datacube_esteroids.py 1985-08-01T00:00:00.000Z 2000-09-01T00:00:00.000Z 147.542 -30.6234
 
