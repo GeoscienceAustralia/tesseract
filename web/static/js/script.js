@@ -5,7 +5,7 @@ var myApp = angular.module('myApp', []);
 myApp.controller('MainCtrl', function($scope, $http){
 
     $scope.data = null;
-    $scope.dato = null;
+    $scope.coords = null;
 
     $http({
         method: 'GET',
@@ -30,7 +30,66 @@ myApp.directive('clickableMap', function(){
 
   function link(scope, el, attr){
 
-    // set up map
+    el.append('<div id="map" class="col-md-6"></div>');
+
+    var mousePositionControl = new ol.control.MousePosition({
+      coordinateFormat: ol.coordinate.createStringXY(4),
+      projection: 'EPSG:4326',
+      // comment the following two lines to have the mouse position
+      // be placed within the map.
+      className: 'custom-mouse-position',
+      target: document.getElementById('mouse-position'),
+      undefinedHTML: '&nbsp;'
+    });
+
+
+    // A ring must be closed, that is its last coordinate
+    // should be the same as its first coordinate.
+    var ring = [
+      [147, -31], [152, -31], [152, -25], [147, -25], [147, -31]
+    ];
+
+    // A polygon is an array of rings, the first ring is
+    // the exterior ring, the others are the interior rings.
+    // In your case there is one ring only.
+    var polygon = new ol.geom.Polygon([ring]);
+
+    // Create feature with polygon.
+    var feature = new ol.Feature(polygon);
+
+    polygon.transform('EPSG:4326', 'EPSG:3857');
+
+
+    // Create vector source and the feature to it.
+    var vectorSource = new ol.source.Vector();
+    vectorSource.addFeature(feature);
+
+
+    var map = new ol.Map({
+      target: 'map',
+      controls: ol.control.defaults().extend([mousePositionControl]),
+      layers: [
+        new ol.layer.Tile({
+            source: new ol.source.MapQuest({layer: 'sat'})
+        }),
+        new ol.layer.Vector({
+            source: vectorSource
+        })
+      ],
+      //renderer: exampleNS.getRendererFromQueryString(),
+      view: new ol.View({
+        center: ol.proj.transform([150.0, -28.00], 'EPSG:4326', 'EPSG:3857'),
+        zoom: 5
+      })
+    });
+
+    map.on("click", function(e) {
+        clicked_coord = ol.proj.transform(e.coordinate, 'EPSG:3857', 'EPSG:4326');
+        console.log(clicked_coord);
+        if (147 < clicked_coord[0] && clicked_coord[0]< 152 && -31 < clicked_coord[1] && clicked_coord[1] < -25) {
+            scope.coords = clicked_coord;
+        }
+    });
 
     scope.$watch('coords', function(coords){
 
@@ -38,7 +97,7 @@ myApp.directive('clickableMap', function(){
         return;
       }
 
-      // look for changes in the
+      console.log("Coordinates changed!")
 
     }, true);
 
@@ -87,6 +146,7 @@ myApp.directive('areaChart', function(){
         .values(function(d) { return d.values; });
 
     var svg = d3.select("body").append("svg")
+        .attr("class", "col-md-6")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
         .append("g")
