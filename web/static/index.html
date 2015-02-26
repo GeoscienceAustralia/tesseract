@@ -23,10 +23,9 @@ body {
   <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
 </head>
 <body ng-app="myApp" ng-controller="MainCtrl">
-  <div>{{data}}</div>
-  <div>{{dato}}</div>
-  <donut-chart data="data"></donut-chart>
-  <area-chart data="dato"></area-chart>
+
+  <clickable_map coords="coords"></clickable_map>
+  <area-chart data="data"></area-chart>
 
   <script src="js/script.js"></script>
 </body>

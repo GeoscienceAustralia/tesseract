@@ -12,29 +12,42 @@ myApp.controller('MainCtrl', function($scope, $http){
         url: "/pixel_drill/23/23/23/23/",
         headers: {'Content-Type': 'application/x-www-form-urlencoded'}
     }).success(function(response){
-        $scope.data = response;
-        console.log("response data: " + $scope.data)
-
-    }).error(function(){
-        alert("Error ");
-    });
-
-    $http({
-        method: 'GET',
-        url: "/pixel_drull/23/23/23/23/",
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'}
-    }).success(function(response){
-        var parseDate = d3.time.format("%y-%b-%d").parse
+        var parseDate = d3.time.format("%Y-%m-%dT%H:%M:%S.%LZ").parse
         response.forEach(function(d) {
-            d.date = parseDate(d.date);
+            d.timestamp = parseDate(d.timestamp);
         });
-        $scope.dato = response;
-        console.log("response dato: " + $scope.dato)
+        $scope.data = response;
 
     }).error(function(){
         alert("Error ");
     });
 
+});
+
+
+
+myApp.directive('clickableMap', function(){
+
+  function link(scope, el, attr){
+
+    // set up map
+
+    scope.$watch('coords', function(coords){
+
+      if(!coords){
+        return;
+      }
+
+      // look for changes in the
+
+    }, true);
+
+  }
+  return {
+    link: link,
+    restrict: 'E',
+    scope: { coords: '=' }
+  };
 });
 
 
@@ -76,30 +89,33 @@ myApp.directive('areaChart', function(){
     var svg = d3.select("body").append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
-      .append("g")
+        .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 
     scope.$watch('data', function(data){
-      console.log('changed dato: ' + data)
+
       if(!data){
         return;
       }
+
+      color.domain(d3.keys(data[0]).filter(function(key) { return key !== "timestamp"; }));
+
       var browsers = stack(color.domain().map(function(name) {
         return {
           name: name,
           values: data.map(function(d) {
-            return {date: d.date, y: d[name] / 100};
+            return {date: d.timestamp, y: d[name] / 1000};
           })
         };
-        console.log(browsers)
+
       }));
 
-      x.domain(d3.extent(data, function(d) { return d.date; }));
+      x.domain(d3.extent(data, function(d) { return d.timestamp; }));
 
       var browser = svg.selectAll(".browser")
           .data(browsers)
-        .enter().append("g")
+          .enter().append("g")
           .attr("class", "browser");
 
       browser.append("path")
@@ -123,46 +139,6 @@ myApp.directive('areaChart', function(){
           .attr("class", "y axis")
           .call(yAxis);
 
-    }, true);
-
-  }
-  return {
-    link: link,
-    restrict: 'E',
-    scope: { data: '=' }
-  };
-});
-
-myApp.directive('donutChart', function(){
-  function link(scope, el, attr){
-    var color = d3.scale.category10();
-    var width = 300;
-    var height = 300;
-    var min = Math.min(width, height);
-    var svg = d3.select(el[0]).append('svg');
-    var pie = d3.layout.pie().sort(null);
-    var arc = d3.svg.arc()
-      .outerRadius(min / 2 * 0.9)
-      .innerRadius(min / 2 * 0.5);
-
-    svg.attr({width: width, height: height});
-    // center the donut chart
-    var g = svg.append('g')
-      .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
-
-    // add the <path>s for each arc slice
-    var arcs = g.selectAll('path');
-
-    scope.$watch('data', function(data){
-      console.log("changed data: " + data)
-      if(!data){ return; }
-      arcs = arcs.data(pie(data));
-      arcs.exit().remove();
-      arcs.enter().append('path')
-        .style('stroke', 'white')
-        .attr('fill', function(d, i){ return color(i) });
-      // update all the arcs (not just the ones that might have been added)
-      arcs.attr('d', arc);
     }, true);
 
   }
