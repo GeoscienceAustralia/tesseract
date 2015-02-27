@@ -5,22 +5,25 @@ var myApp = angular.module('myApp', []);
 myApp.controller('MainCtrl', function($scope, $http){
 
     $scope.data = null;
-    $scope.coords = null;
+    $scope.coords = "Not selected";
 
-    $http({
-        method: 'GET',
-        url: "/pixel_drill/23/23/23/23/",
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'}
-    }).success(function(response){
-        var parseDate = d3.time.format("%Y-%m-%dT%H:%M:%S.%LZ").parse
-        response.forEach(function(d) {
-            d.timestamp = parseDate(d.timestamp);
+    $scope.update_coords = function(coords) {
+        console.log("update_ts_with_coords: " + coords)
+        $http({
+            method: 'GET',
+            url: "/pixel_drill/1985-08-30T00:00:00.000Z/2014-08-30T00:00:00.000Z/147.547/-30.6234/",
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+        }).success(function(response){
+            var parseDate = d3.time.format("%Y-%m-%dT%H:%M:%S.%LZ").parse
+            response.forEach(function(d) {
+                d.timestamp = parseDate(d.timestamp);
+            });
+            $scope.data = response;
+
+        }).error(function(){
+            alert("Error ");
         });
-        $scope.data = response;
-
-    }).error(function(){
-        alert("Error ");
-    });
+    };
 
 });
 
@@ -29,6 +32,13 @@ myApp.controller('MainCtrl', function($scope, $http){
 myApp.directive('clickableMap', function(){
 
   function link(scope, el, attr){
+
+    console.log(scope.coords);
+    //scope.coords = "23, 45";
+    //console.log(scope.coords);
+    //scope.coords = "20, 45";
+    //console.log(scope.coords);
+
 
     el.append('<div id="map" class="col-md-6"></div>');
 
@@ -82,30 +92,22 @@ myApp.directive('clickableMap', function(){
         zoom: 5
       })
     });
-
+    scope.coords = "[34,65]"
     map.on("click", function(e) {
         clicked_coord = ol.proj.transform(e.coordinate, 'EPSG:3857', 'EPSG:4326');
-        console.log(clicked_coord);
+
         if (147 < clicked_coord[0] && clicked_coord[0]< 152 && -31 < clicked_coord[1] && clicked_coord[1] < -25) {
             scope.coords = clicked_coord;
+            scope.update_coords(clicked_coord);
         }
     });
 
-    scope.$watch('coords', function(coords){
-
-      if(!coords){
-        return;
-      }
-
-      console.log("Coordinates changed!")
-
-    }, true);
 
   }
   return {
     link: link,
     restrict: 'E',
-    scope: { coords: '=' }
+    scope: false
   };
 });
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+    "fmt"
     "log"
     "encoding/json"
 	"github.com/gorilla/mux"
@@ -27,6 +28,16 @@ func projectAll(w http.ResponseWriter, r *http.Request) {
 
 
 func projectAll1(w http.ResponseWriter, r *http.Request) {
+
+    params := mux.Vars(r)
+	start_date := params["start_date"]
+	end_date := params["end_date"]
+	lon := params["lon"]
+	lat := params["lat"]
+
+	//cmd := exec.Command("python", "../core/datacube_esteroids.py", start_date, end_date, lon, lat)
+
+	fmt.Printf("python", "../core/datacube_esteroids.py", start_date, end_date, lon, lat)
 
     x := make([]interface{}, 0)
     item1 := make(map[string]interface{})
@@ -79,7 +90,7 @@ func main() {
 	r := mux.NewRouter()
 
 	r.Handle("/", http.RedirectHandler("/web_server/index.html", 302))
-	r.HandleFunc("/pixel_drill/{year:[0-9]+}/{exp_name:[A-Za-z0-9._ %-]+}/{source:[A-Za-z0-9._ %-]+}/{date:[0-9]+}/", projectAll1).Methods("GET")
+	r.HandleFunc("/pixel_drill/{start_date:[A-Z0-9.:-]+}/{end_date:[A-Z0-9.:-]+}/{lon:[0-9.-]+}/{lat:[0-9.-]+}/", projectAll1).Methods("GET")
 	r.PathPrefix("/web_server/").Handler(http.StripPrefix("/web_server", http.FileServer(http.Dir("./static/"))))
 
 	http.Handle("/", r)
