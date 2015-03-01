@@ -4,14 +4,18 @@ var myApp = angular.module('myApp', []);
 
 myApp.controller('MainCtrl', function($scope, $http){
 
+    $scope.sat = "LS5";
+    $scope.prod = "FC";
+    $scope.start_date = new Date(1987, 1, 1, 0, 0, 0, 0);
+    $scope.end_date = new Date(2014, 1, 1, 0, 0, 0, 0);
     $scope.data = null;
-    $scope.coords = "Not selected";
+    $scope.coords = [null, null];
 
     $scope.update_coords = function(coords) {
         console.log("update_ts_with_coords: " + coords)
         $http({
             method: 'GET',
-            url: "/pixel_drill/1985-08-30T00:00:00.000Z/2014-08-30T00:00:00.000Z/147.547/-30.6234/",
+            url: "/pixel_drill/" + $scope.start_date.toISOString() + "/" + $scope.end_date.toISOString() + "/" + $scope.coords[0] + "/" + $scope.coords[1] + "/",
             headers: {'Content-Type': 'application/x-www-form-urlencoded'}
         }).success(function(response){
             var parseDate = d3.time.format("%Y-%m-%dT%H:%M:%S.%LZ").parse
@@ -34,13 +38,9 @@ myApp.directive('clickableMap', function(){
   function link(scope, el, attr){
 
     console.log(scope.coords);
-    //scope.coords = "23, 45";
-    //console.log(scope.coords);
-    //scope.coords = "20, 45";
-    //console.log(scope.coords);
 
 
-    el.append('<div id="map" class="col-md-6"></div>');
+    el.append('<div id="map" class="col-md-9"></div>');
 
     var mousePositionControl = new ol.control.MousePosition({
       coordinateFormat: ol.coordinate.createStringXY(4),
@@ -89,10 +89,10 @@ myApp.directive('clickableMap', function(){
       //renderer: exampleNS.getRendererFromQueryString(),
       view: new ol.View({
         center: ol.proj.transform([150.0, -28.00], 'EPSG:4326', 'EPSG:3857'),
-        zoom: 5
+        zoom: 6
       })
     });
-    scope.coords = "[34,65]"
+
     map.on("click", function(e) {
         clicked_coord = ol.proj.transform(e.coordinate, 'EPSG:3857', 'EPSG:4326');
 
@@ -116,9 +116,14 @@ myApp.directive('areaChart', function(){
 
   function link(scope, el, attr){
 
-    var margin = {top: 20, right: 20, bottom: 30, left: 50},
-    width = 960 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom;
+    el.append('<div id="chart" class="col-md-12"></div>');
+
+    var margin = {top: 40, right: 60, bottom: 40, left: 60},
+    width = d3.select("#chart").node().getBoundingClientRect().width - margin.left - margin.right,
+    //width = 960 - margin.left - margin.right,
+    height = (width / 2.618) - margin.top - margin.bottom;
+
+    console.log(d3.select("#chart").node().getBoundingClientRect())
 
     var formatPercent = d3.format(".0%");
 
@@ -129,6 +134,9 @@ myApp.directive('areaChart', function(){
         .range([height, 0]);
 
     var color = d3.scale.category20();
+    var color = d3.scale.ordinal()
+                  .domain(["FC0", "FC1", "FC2"])
+                  .range(["#993300", "#FFCC00" , "#336600"]);
 
     var xAxis = d3.svg.axis()
         .scale(x)
@@ -147,8 +155,8 @@ myApp.directive('areaChart', function(){
     var stack = d3.layout.stack()
         .values(function(d) { return d.values; });
 
-    var svg = d3.select("body").append("svg")
-        .attr("class", "col-md-6")
+    var svg = d3.select("#chart").append("svg")
+        //.attr("class", "col-md-12")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
         .append("g")

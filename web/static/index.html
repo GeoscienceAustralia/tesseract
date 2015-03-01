@@ -2,9 +2,20 @@
 <html>
 <style>
 
+
 body {
     padding-top: 70px;
     font: 10px sans-serif;
+}
+
+    hr {
+    display: block;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+    margin-left: auto;
+    margin-right: auto;
+    border-style: inset;
+    border-width: 1px;
 }
 
 .axis path,
@@ -72,10 +83,62 @@ body {
             <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas sed diam eget risus varius blandit sit amet non magna. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent commodo cursus magna, vel scelerisque nisl consectetur et. Cras mattis consectetur purus sit amet fermentum. Duis mollis, est non commodo luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit. Aenean lacinia bibendum nulla sed consectetur.</p>
         </div>
 
-        <div class="col-md-3">{{coords}}</div>
-        <!-- <clickable-map ng-model='coords'></clickable-map> -->
+        <h3>Select Variables:</h3>
+        <hr>
+
+        <div class="col-md-3">
+
+            <form role="form">
+                <div class="form-group">
+                    <div class="row">
+                        <label for="satellite">Satellite:</label>
+                    </div>
+                    <select id="satellite" class="form-control" ng-model="sat">
+                        <option ng-selected="selected">LS5</option>
+                        <option>LS7</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <div class="row">
+                        <label for="product">Product:</label>
+                    </div>
+                    <select id="product" class="form-control" ng-model="prod">
+                        <option ng-selected="selected">FC</option>
+                        <option>NBAR</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                     <div class="row">
+                        <label for="start_date" class="control-label">Start Date:</label>
+                     </div>
+                    <input id="start_date" type="date" ng-model="start_date">
+                </div>
+                <div class="form-group">
+                     <div class="row">
+                        <label for="end_date" class="control-label">End Date:</label>
+                     </div>
+                    <input id="end_date" type="date" ng-model="end_date">
+                </div>
+                <div class="form-group">
+                     <div class="row">
+                        <label for="coords" class="control-label">Longitude/Latitude:</label>
+                     </div>
+                    <input id="coords" type="value" ng-model="coords[0]">
+                    <input type="value" ng-model="coords[1]">
+                </div>
+
+              <button type="submit" class="btn btn-default">Submit</button>
+            </form>
+
+
+        </div>
+
         <clickable-map ng-click></clickable-map>
 
+        <hr>
+
+        <h3>Time Series Stacked Chart:</h3>
+        <hr>
 
         <area-chart data="data"></area-chart>
 
