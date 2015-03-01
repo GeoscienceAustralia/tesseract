@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import argparse
 
-abs_path = "/g/data1/v10/HPCData/test/"
+abs_path = "/g/data1/rs0/tiles/EPSG4326_1deg_0.00025pixel_netcdf/HPCData/"
 
 class Datacube(object):
     # Consider integrating satellite information inside id_object
