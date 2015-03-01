@@ -114,6 +114,8 @@ def test_pixel_drill(products=None, t1=None, t2=None, x=None, y=None):
     df.dropna(how='any', inplace=True)
     df["timestamp"] = df.index
     print df.columns.tolist()
+
+    df = df[['FC_0', 'FC_2', 'FC_1', 'FC_3', 'timestamp']]
     print df.head(10)
     return df.to_json(date_format='iso', orient='records')
 
