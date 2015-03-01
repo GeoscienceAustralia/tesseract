@@ -113,6 +113,7 @@ def test_pixel_drill(products=None, t1=None, t2=None, x=None, y=None):
 
     df.dropna(how='any', inplace=True)
     df["timestamp"] = df.index
+    print df.columns.tolist()
     print df.head(10)
     return df.to_json(date_format='iso', orient='records')
 
@@ -131,8 +132,8 @@ if __name__ == "__main__":
     time1 = datetime.strptime(args.start_date, '%Y-%m-%dT%H:%M:%S.%fZ')
     time2 = datetime.strptime(args.end_date, '%Y-%m-%dT%H:%M:%S.%fZ')
 
-    print test_pixel_drill(products=["FC", "WOFS"], t1=time1, t2=time2, x=args.start_x, y=args.start_y)
+    print test_pixel_drill(products=["FC"], t1=time1, t2=time2, x=args.start_x, y=args.start_y)
 
     #Test with
-    # time python datacube_esteroids.py 1985-08-01T00:00:00.000Z 2000-09-01T00:00:00.000Z 147.542 -30.6234
+    # time python datacube_steroids.py 1985-08-01T00:00:00.000Z 2000-09-01T00:00:00.000Z 147.542 -30.6234
 

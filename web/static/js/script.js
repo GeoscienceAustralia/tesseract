@@ -19,9 +19,11 @@ myApp.controller('MainCtrl', function($scope, $http){
             headers: {'Content-Type': 'application/x-www-form-urlencoded'}
         }).success(function(response){
             var parseDate = d3.time.format("%Y-%m-%dT%H:%M:%S.%LZ").parse
+
             response.forEach(function(d) {
                 d.timestamp = parseDate(d.timestamp);
             });
+
             $scope.data = response;
 
         }).error(function(){
@@ -133,10 +135,10 @@ myApp.directive('areaChart', function(){
     var y = d3.scale.linear()
         .range([height, 0]);
 
-    var color = d3.scale.category20();
+    //var color = d3.scale.category20();
     var color = d3.scale.ordinal()
-                  .domain(["FC0", "FC1", "FC2"])
-                  .range(["#993300", "#FFCC00" , "#336600"]);
+                  .domain(["FC0", "FC2", "FC1"])
+                  .range(["#D9A88F", "#F9D3A5", "#AB9C73"]);
 
     var xAxis = d3.svg.axis()
         .scale(x)
@@ -152,8 +154,13 @@ myApp.directive('areaChart', function(){
         .y0(function(d) { return y(d.y0); })
         .y1(function(d) { return y(d.y0 + d.y); });
 
-    var stack = d3.layout.stack()
+    var stack_bak = d3.layout.stack()
         .values(function(d) { return d.values; });
+    var stack = d3.layout.stack()
+        .values(function(d) {
+            console.log(d.values);
+            return d.values; 
+        });
 
     var svg = d3.select("#chart").append("svg")
         //.attr("class", "col-md-12")
