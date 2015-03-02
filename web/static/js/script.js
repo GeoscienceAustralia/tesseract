@@ -162,6 +162,9 @@ myApp.directive('areaChart', function(){
             return d.values; 
         });
 
+    // Clean before plotting
+    d3.select("svg").remove();
+
     var svg = d3.select("#chart").append("svg")
         //.attr("class", "col-md-12")
         .attr("width", width + margin.left + margin.right)

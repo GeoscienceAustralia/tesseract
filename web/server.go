@@ -24,68 +24,7 @@ func projectAll(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	//jsonBytes, _ := json.Marshal(out)
-
 	w.Write([]byte(out))
-}
-
-func projectAll1(w http.ResponseWriter, r *http.Request) {
-
-	params := mux.Vars(r)
-	start_date := params["start_date"]
-	end_date := params["end_date"]
-	lon := params["lon"]
-	lat := params["lat"]
-
-	//cmd := exec.Command("python", "../core/datacube_esteroids.py", start_date, end_date, lon, lat)
-
-	fmt.Printf("python", "../core/datacube_esteroids.py", start_date, end_date, lon, lat)
-
-	x := make([]interface{}, 0)
-	item1 := make(map[string]interface{})
-	item1["timestamp"] = "2011-02-13T23:43:41.000Z"
-	item1["FC_0"] = 250.0
-	item1["FC_1"] = 500.0
-	item1["FC_2"] = 250.0
-	//item1["FC_3"] = 0.0
-	//item1["wofs_0"] = 100.0
-	x = append(x, item1)
-	item2 := make(map[string]interface{})
-	item2["timestamp"] = "2011-02-16T13:23:04.000Z"
-	item2["FC_0"] = 200.0
-	item2["FC_1"] = 500.0
-	item2["FC_2"] = 300.0
-	//item2["FC_3"] = 0.0
-	//item2["wofs_0"] = 150.0
-	x = append(x, item2)
-	item3 := make(map[string]interface{})
-	item3["timestamp"] = "2011-02-26T17:23:31.000Z"
-	item3["FC_0"] = 180.0
-	item3["FC_1"] = 520.0
-	item3["FC_2"] = 300.0
-	//item3["FC_3"] = 0.0
-	//item3["wofs_0"] = 150.0
-	x = append(x, item3)
-	item4 := make(map[string]interface{})
-	item4["timestamp"] = "2011-03-01T09:51:34.000Z"
-	item4["FC_0"] = 160.0
-	item4["FC_1"] = 530.0
-	item4["FC_2"] = 310.0
-	//item4["FC_3"] = 0.0
-	//item4["wofs_0"] = 150.0
-	x = append(x, item4)
-	item5 := make(map[string]interface{})
-	item5["timestamp"] = "2011-03-08T11:04:23.000Z"
-	item5["FC_0"] = 130.0
-	item5["FC_1"] = 540.0
-	item5["FC_2"] = 330.0
-	//item5["FC_3"] = 0.0
-	//item5["wofs_0"] = 150.0
-	x = append(x, item5)
-
-	jsonBytes, _ := json.Marshal(x)
-
-	w.Write([]byte(jsonBytes))
 }
 
 func main() {
