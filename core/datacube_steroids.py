@@ -114,12 +114,20 @@ def test_pixel_drill(products=None, t1=None, t2=None, x=None, y=None):
     df.dropna(how='any', inplace=True)
     df["timestamp"] = df.index
     print df.columns.tolist()
+    
+    df = df[df.FC_0 != -999]
+    df = df[df.FC_1 != -999]
+    df = df[df.FC_2 != -999]
 
     df = df[['FC_0', 'FC_2', 'FC_1', 'FC_3', 'timestamp']]
     df.drop('FC_3', axis=1, inplace=True)
+    df['Total'] = 10000.0 / (df['FC_0'] + df['FC_2'] + df['FC_1'])
+    df['FC_0'] = df['FC_0'] * df['Total']
+    df['FC_1'] = df['FC_1'] * df['Total']
+    df['FC_2'] = df['FC_2'] * df['Total']
+    df.drop('Total', axis=1, inplace=True)
     df['Total'] = df['FC_0'] + df['FC_2'] + df['FC_1']
     print df.head(10)
-    df.drop('Total', axis=1, inplace=True)
     return df.to_json(date_format='iso', orient='records')
 
 

@@ -182,7 +182,7 @@ myApp.directive('areaChart', function(){
         return {
           name: name,
           values: data.map(function(d) {
-            return {date: d.timestamp, y: d[name] / 1000};
+            return {date: d.timestamp, y: d[name] / 10000};
           })
         };
 

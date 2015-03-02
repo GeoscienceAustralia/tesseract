@@ -11,15 +11,16 @@ import (
 
 func projectAll(w http.ResponseWriter, r *http.Request) {
 
-	//params := mux.Vars(r)
-	//year := params["year"]
-	//exp_name := params["exp_name"]
-	//source := params["source"]
-	//date := params["date"]
+    params := mux.Vars(r)
+	start_date := params["start_date"]
+	end_date := params["end_date"]
+	lon := params["lon"]
+	lat := params["lat"]
 
-	//var filePath = HomeFolder + year + "/" + exp_name + "/" + source + "/" + date + "/"
+	fmt.Printf("python", "../core/datacube_esteroids.py", start_date, end_date, lon, lat)
 
-	out, err := exec.Command("python", "../core/datacube_esteroids.py", "1985-08-01T00:00:00.000Z", "2000-09-01T00:00:00.000Z", "147.542", "-30.6234").Output()
+
+	out, err := exec.Command("python", "../core/datacube_steroids.py", start_date, end_date, lon, lat").Output()
 	if err != nil {
 		log.Fatal(err)
 	}
