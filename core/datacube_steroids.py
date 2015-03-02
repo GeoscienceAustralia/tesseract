@@ -116,7 +116,10 @@ def test_pixel_drill(products=None, t1=None, t2=None, x=None, y=None):
     print df.columns.tolist()
 
     df = df[['FC_0', 'FC_2', 'FC_1', 'FC_3', 'timestamp']]
+    df.drop('FC_3', axis=1, inplace=True)
+    df['Total'] = df['FC_0'] + df['FC_2'] + df['FC_1']
     print df.head(10)
+    df.drop('Total', axis=1, inplace=True)
     return df.to_json(date_format='iso', orient='records')
 
 
@@ -134,7 +137,7 @@ if __name__ == "__main__":
     time1 = datetime.strptime(args.start_date, '%Y-%m-%dT%H:%M:%S.%fZ')
     time2 = datetime.strptime(args.end_date, '%Y-%m-%dT%H:%M:%S.%fZ')
 
-    print test_pixel_drill(products=["FC"], t1=time1, t2=time2, x=args.start_x, y=args.start_y)
+    test_pixel_drill(products=["FC"], t1=time1, t2=time2, x=args.start_x, y=args.start_y)
 
     #Test with
     # time python datacube_steroids.py 1985-08-01T00:00:00.000Z 2000-09-01T00:00:00.000Z 147.542 -30.6234
