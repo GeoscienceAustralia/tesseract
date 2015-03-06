@@ -154,8 +154,12 @@ def test_pixel_drill(products=None, t1=None, t2=None, x=None, y=None):
     df.drop('Total', axis=1, inplace=True)
 
     df_rain = pixel_drill_ecmwf(t1=t1, t2=t2, x=x, y=y)
+
     print df_rain.head(10)
+    df_rain = df_rain.reindex(df.index, method='ffill')
     print df.head(10)
+    df["TP"] = df_rain["TP"]
+    print df_rain.head(10)
     
     return df.to_json(date_format='iso', orient='records')
 
