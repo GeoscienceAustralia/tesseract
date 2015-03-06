@@ -159,7 +159,7 @@ def test_pixel_drill(products=None, t1=None, t2=None, x=None, y=None):
     df_rain = df_rain.reindex(df.index, method='ffill')
     print df.head(10)
     df["TP"] = df_rain["TP"]
-    print df_rain.head(10)
+    print df.head(10)
     
     return df.to_json(date_format='iso', orient='records')
 
