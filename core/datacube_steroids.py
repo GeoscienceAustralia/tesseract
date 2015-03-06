@@ -144,6 +144,7 @@ def test_pixel_drill(products=None, t1=None, t2=None, x=None, y=None):
     df = df[df.FC_0 != -999]
     df = df[df.FC_1 != -999]
     df = df[df.FC_2 != -999]
+    print df.columns
 
     df = df[['FC_0', 'FC_2', 'FC_1', 'FC_3', 'timestamp']]
     df.drop('FC_3', axis=1, inplace=True)
