@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import argparse
 
-abs_path = "/g/data1/rs0/tiles/EPSG4326_1deg_0.00025pixel_netcdf/HPCData/"
+abs_path = "/g/data/rs0/tiles/EPSG4326_1deg_0.00025pixel_netcdf/HPCData/"
 
 class Datacube(object):
     # Consider integrating satellite information inside id_object
@@ -68,6 +68,7 @@ def create_datacube(product=None, t1=None, t2=None, x1=None, x2=None, y1=None, y
     return cubes
 
 
+#This function will be replaced by an external db indexing the system
 def _indexer(root=None, product=None, t1=None, t2=None, x1=None, x2=None, y1=None, y2=None):
     files = []
     
@@ -83,13 +84,16 @@ def get_index(value, dimension):
     return np.abs(dimension-value).argmin()
 
 
+v_epoch2datetime = np.vectorize(lambda x: datetime.fromtimestamp(x))
+
+
 def pixel_drill(product=None, t1=None, t2=None, x=None, y=None):
 
     cubes = create_datacube(product=product, t1=t1, t2=t2, x1=x, x2=x+.00025, y1=y, y2=y+.00025)
 
     dfs = []
     for cube in cubes:
-        index = map(datetime.fromtimestamp, cube.t_dim)
+        index = v_epoch2datetime(cube.t_dim)
         dfs.append(pd.DataFrame(np.squeeze(cube.array), index=index,
                                 columns=[product + '_' + str(i) for i in cube.b_dim]))
 
@@ -99,6 +103,26 @@ def pixel_drill(product=None, t1=None, t2=None, x=None, y=None):
     df = df.drop("index", 1)
 
     return df
+
+
+def pixel_drill_ecmwf(t1=None, t2=None, x=None, y=None):
+
+    era_interim = abs_path + "TP_25-31_147-152_1985-2015.nc4"
+
+    with h5py.File(era_interim, 'r') as hfile:
+
+        t_dim = hfile["time"].value
+        index = v_epoch2datetime(t_dim)
+
+        #Note y and x dims are swaped as satellite
+        df = pd.DataFrame(hfile["TP"][:, y:y+.125, x:x+.125], index=index, columns=["TP"])
+        #remove negative offset
+        df.TP += (0-df.TP.min())
+
+        #select time range
+        df.TP += (0-df.TP.min())
+        #aggregate and return
+        return df.resample("7D", how="sum")
 
 
 def test_pixel_drill(products=None, t1=None, t2=None, x=None, y=None):
@@ -125,6 +149,10 @@ def test_pixel_drill(products=None, t1=None, t2=None, x=None, y=None):
     df['FC_1'] = df['FC_1'] * df['Total']
     df['FC_2'] = df['FC_2'] * df['Total']
     df.drop('Total', axis=1, inplace=True)
+
+    df_rain = pixel_drill_ecmwf(t1=t1, t2=t2, x=x, y=y)
+    print df_rain.head(10)
+    print df.head(10)
     
     return df.to_json(date_format='iso', orient='records')
 
@@ -143,7 +171,9 @@ if __name__ == "__main__":
     time1 = datetime.strptime(args.start_date, '%Y-%m-%dT%H:%M:%S.%fZ')
     time2 = datetime.strptime(args.end_date, '%Y-%m-%dT%H:%M:%S.%fZ')
 
-    print test_pixel_drill(products=["FC"], t1=time1, t2=time2, x=args.start_x, y=args.start_y)
+    test_pixel_drill(products=["FC"], t1=time1, t2=time2, x=args.start_x, y=args.start_y)
+
+    #print test_pixel_drill(products=["FC"], t1=time1, t2=time2, x=args.start_x, y=args.start_y)
 
     #Test with
     # time python datacube_steroids.py 1985-08-01T00:00:00.000Z 2000-09-01T00:00:00.000Z 147.542 -30.6234

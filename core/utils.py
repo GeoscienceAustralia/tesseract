@@ -1,4 +1,7 @@
 import numpy as np
+from datetime import datetime
+
+vector_epoch_to_date = np.vectorize(lambda x: datetime.fromtimestamp(x))
 
 def get_geo_dim(start, extent, pixel_size):
     return np.linspace(start, start+extent, round(extent/pixel_size)+1)[:-1]
