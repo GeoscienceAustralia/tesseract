@@ -120,12 +120,10 @@ def pixel_drill_ecmwf(t1=None, t2=None, x=None, y=None):
         y_i = get_index(y, y_dim)
 
         #Note y and x dims are swaped as satellite
-        df = pd.DataFrame(hfile["TP"][:, y_i:y_i+1, x_i:x_i+1], index=index, columns=["TP"])
+        df = pd.DataFrame(hfile["TP"][:, y_i, x_i], index=index, columns=["TP"])
         #remove negative offset
         df.TP += (0-df.TP.min())
 
-        #select time range
-        df.TP += (0-df.TP.min())
         #aggregate and return
         return df.resample("7D", how="sum")
 
