@@ -107,15 +107,20 @@ def pixel_drill(product=None, t1=None, t2=None, x=None, y=None):
 
 def pixel_drill_ecmwf(t1=None, t2=None, x=None, y=None):
 
-    era_interim = abs_path + "TP_25-31_147-152_1985-2015.nc4"
+    era_interim = abs_path + "TP_25-31_147-152_1985-2015.h5"
 
     with h5py.File(era_interim, 'r') as hfile:
 
         t_dim = hfile["time"].value
         index = v_epoch2datetime(t_dim)
 
+        y_dim = hfile["Y"].value
+        x_dim = hfile["X"].value
+        x_i = get_index(x, x_dim)
+        y_i = get_index(y, y_dim)
+
         #Note y and x dims are swaped as satellite
-        df = pd.DataFrame(hfile["TP"][:, y:y+.125, x:x+.125], index=index, columns=["TP"])
+        df = pd.DataFrame(hfile["TP"][:, y_i:y_i+1, x_i:x_i+1], index=index, columns=["TP"])
         #remove negative offset
         df.TP += (0-df.TP.min())
 
