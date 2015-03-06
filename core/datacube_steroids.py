@@ -144,7 +144,6 @@ def test_pixel_drill(products=None, t1=None, t2=None, x=None, y=None):
     df = df[df.FC_0 != -999]
     df = df[df.FC_1 != -999]
     df = df[df.FC_2 != -999]
-    print df.columns
 
     df = df[['FC_0', 'FC_2', 'FC_1', 'FC_3', 'WOFS_0', 'timestamp']]
     df.drop('FC_3', axis=1, inplace=True)
@@ -156,11 +155,8 @@ def test_pixel_drill(products=None, t1=None, t2=None, x=None, y=None):
 
     df_rain = pixel_drill_ecmwf(t1=t1, t2=t2, x=x, y=y)
 
-    print df_rain.head(10)
     df_rain = df_rain.reindex(df.index, method='ffill')
-    print df.head(10)
     df["TP"] = df_rain["TP"]
-    print df.head(10)
     
     return df.to_json(date_format='iso', orient='records')
 
@@ -179,9 +175,7 @@ if __name__ == "__main__":
     time1 = datetime.strptime(args.start_date, '%Y-%m-%dT%H:%M:%S.%fZ')
     time2 = datetime.strptime(args.end_date, '%Y-%m-%dT%H:%M:%S.%fZ')
 
-    test_pixel_drill(products=["FC", "WOFS"], t1=time1, t2=time2, x=args.start_x, y=args.start_y)
-
-    #print test_pixel_drill(products=["FC"], t1=time1, t2=time2, x=args.start_x, y=args.start_y)
+    print test_pixel_drill(products=["FC"], t1=time1, t2=time2, x=args.start_x, y=args.start_y)
 
     #Test with
     # time python datacube_steroids.py 1985-08-01T00:00:00.000Z 2000-09-01T00:00:00.000Z 147.542 -30.6234
