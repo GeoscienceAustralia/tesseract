@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
 	"log"
@@ -17,7 +16,7 @@ func projectAll(w http.ResponseWriter, r *http.Request) {
 	lon := params["lon"]
 	lat := params["lat"]
 
-	fmt.Printf("python", "../core/datacube_esteroids.py", start_date, end_date, lon, lat)
+	fmt.Printf("python", "../core/datacube_steroids.py", start_date, end_date, lon, lat)
 
 	out, err := exec.Command("python", "../core/datacube_steroids.py", start_date, end_date, lon, lat).Output()
 	if err != nil {
