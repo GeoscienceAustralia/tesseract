@@ -79,7 +79,7 @@ def get_tesserae(sources=None, products=None, t1=None, t2=None, x1=None, x2=None
     return tesserae
 
 
-def pixel_drill(sources=None, products=None, t1=None, t2=None, x=None, y=None):
+def pixel_drill_fc(sources=None, products=None, t1=None, t2=None, x=None, y=None):
 
     v_epoch2datetime = np.vectorize(lambda x: datetime.fromtimestamp(x))
 
@@ -127,6 +127,31 @@ def pixel_drill(sources=None, products=None, t1=None, t2=None, x=None, y=None):
     return df
 
 
+def pixel_drill_era_tp(sources=None, products=None, t1=None, t2=None, x=None, y=None):
+
+    v_epoch2datetime = np.vectorize(lambda x: datetime.fromtimestamp(x))
+
+    cubes = get_tesserae(sources=sources, products=products, t1=t1, t2=t2, x1=x, x2=x+.125, y1=y, y2=y+.125)
+
+    dfs = []
+    for cube in cubes:
+        index = v_epoch2datetime(cube.t_dim)
+        dfs.append(pd.DataFrame(np.squeeze(cube.array), index=index,
+                                columns=[cube.product + '_' + str(i) for i in cube.b_dim]))
+
+    df = pd.concat(dfs)
+    print("start: {}".format(df.shape))
+
+    df.sort_index(inplace=True)
+    print("sorted index: {}".format(df.shape))
+
+    df["timestamp"] = df.index
+    df = df.drop_duplicates(cols='timestamp')
+    print("dup timestamps: {}".format(df.shape))
+
+    return df
+
+
 if __name__ == "__main__":
 
     t1 = "1985-08-01T00:00:00.000Z"
@@ -135,6 +160,10 @@ if __name__ == "__main__":
     time1 = datetime.strptime(t1, '%Y-%m-%dT%H:%M:%S.%fZ')
     time2 = datetime.strptime(t2, '%Y-%m-%dT%H:%M:%S.%fZ')
 
-    df = pixel_drill(sources=["LS5", "LS7"], products=["FC"], t1=time1, t2=time2, x=147.542, y=-30.6234)
+    df = pixel_drill_fc(sources=["LS5", "LS7"], products=["FC"], t1=time1, t2=time2, x=147.542, y=-30.6234)
+
+    print df.head()
+
+    df = pixel_drill_era_tp(sources=["ERA_INTERIM"], products=["TP"], t1=time1, t2=time2, x=147.542, y=-30.6234)
 
     print df.head()
