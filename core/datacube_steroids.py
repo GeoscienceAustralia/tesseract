@@ -9,85 +9,97 @@ import argparse
 
 abs_path = "/g/data/rs0/tiles/EPSG4326_1deg_0.00025pixel_netcdf/HPCData/"
 
-class Datacube(object):
+
+class Tessera(object):
     # Consider integrating satellite information inside id_object
-    def __init__(self, t_dim=None, x_dim=None, y_dim=None, b_dim=None, array=None):
-        
+    def __init__(self, source=None, product=None, t_dim=None, x_dim=None, y_dim=None, b_dim=None, array=None):
+
+        self.source = source
+        self.product = product
         self.t_dim = t_dim
         self.x_dim = x_dim
         self.y_dim = y_dim
         self.b_dim = b_dim
         self.array = array
-     
-        
-def create_datacube(product=None, t1=None, t2=None, x1=None, x2=None, y1=None, y2=None, bands=None):
-    # Consider integrating satellite information inside id_object
-        
-    file_names = _indexer(abs_path, product, t1, t2, x1, x2, y1, y2)
-
-    cubes = []
-
-    for file_name in file_names:
-        
-        if os.path.isfile(file_name):
-
-            dc = Datacube()
-
-            with h5py.File(file_name, 'r') as afile:
-
-                    time_dim = afile[product].dims[0][0].value
-                    x_dim = afile[product].dims[1][0].value
-                    y_dim = afile[product].dims[2][0].value
-                    if len(afile[product].shape) == 3:
-                        band_dim = np.arange(1)
-                    elif len(afile[product].shape) == 4:
-                        band_dim = afile[product].dims[3][0].value
-
-                    t1_i = get_index(time.mktime(t1.timetuple()), time_dim)
-                    t2_i = get_index(time.mktime(t2.timetuple()), time_dim)
-                    dc.t_dim = time_dim[t1_i:t2_i]
-
-                    x1_i = get_index(x1, x_dim)
-                    x2_i = get_index(x2, x_dim)
-                    dc.x_dim = x_dim[x1_i:x2_i]
-
-                    y1_i = get_index(y1, y_dim)
-                    y2_i = get_index(y2, y_dim)
-                    dc.y_dim = y_dim[y1_i:y2_i]
-
-                    #Select bands from input parameters
-                    dc.b_dim = band_dim
-
-                    dc.array = afile[product][t1_i:t2_i, x1_i:x2_i, y1_i:y2_i]
-                    #dc.array = afile[product][t1_i:t2_i, x1_i:x2_i, y1_i:y2_i, :]
-            
-            cubes.append(dc)
-
-    # Here comes the function to merge the cubes  
-
-    return cubes
-
-
-#This function will be replaced by an external db indexing the system
-def _indexer(root=None, product=None, t1=None, t2=None, x1=None, x2=None, y1=None, y2=None):
-    files = []
-    
-    for year in range(t1.year, t2.year+1):
-        for x in range(int(math.floor(x1)), int(math.floor(x2))+1):
-            for y in range(int(math.floor(y1)), int(math.floor(y2))+1):
-                files.append(root + "LS5_TM_{0}_{1}_{2:04d}_{3}.h5".format(product, x, y, year))
- 
-    return files
 
 
 def get_index(value, dimension):
     return np.abs(dimension-value).argmin()
 
+        
+def create_datacube(source=None, product=None, t1=None, t2=None, x1=None, x2=None, y1=None, y2=None, bands=None):
 
-v_epoch2datetime = np.vectorize(lambda x: datetime.fromtimestamp(x))
+    tesserae = []
+
+    for src in source:
+
+        for prod in product:
+
+            file_names = _indexer(abs_path, src, prod, t1, t2, x1, x2, y1, y2)
+
+            for file_name in file_names:
+
+                if os.path.isfile(file_name):
+
+                    tessera = Tessera(source=src, product=prod)
+
+                    with h5py.File(file_name, 'r') as afile:
+
+                        time_dim = afile[product].dims[0][0].value
+                        x_dim = afile[product].dims[1][0].value
+                        y_dim = afile[product].dims[2][0].value
+                        if len(afile[product].shape) == 3:
+                            band_dim = np.arange(1)
+                        elif len(afile[product].shape) == 4:
+                            band_dim = afile[product].dims[3][0].value
+
+                        t1_i = get_index(time.mktime(t1.timetuple()), time_dim)
+                        t2_i = get_index(time.mktime(t2.timetuple()), time_dim)
+                        tessera.t_dim = time_dim[t1_i:t2_i]
+
+                        x1_i = get_index(x1, x_dim)
+                        x2_i = get_index(x2, x_dim)
+                        tessera.x_dim = x_dim[x1_i:x2_i]
+
+                        y1_i = get_index(y1, y_dim)
+                        y2_i = get_index(y2, y_dim)
+                        tessera.y_dim = y_dim[y1_i:y2_i]
+
+                        #Select bands from input parameters
+                        tessera.b_dim = band_dim
+
+                        tessera.array = afile[product][t1_i:t2_i, x1_i:x2_i, y1_i:y2_i]
+                        #tessera.array = afile[product][t1_i:t2_i, x1_i:x2_i, y1_i:y2_i, :]
+
+                    tesserae.append(tessera)
+
+    # Here comes the function to merge the cubes
+
+    return tesserae
+
+
+#This function will be replaced by an external db indexing the system
+def _indexer(root=None, source=None, product=None, t1=None, t2=None, x1=None, x2=None, y1=None, y2=None):
+
+    files = []
+
+    if product == "LS5" or product == "LS7":
+    
+        for year in range(t1.year, t2.year+1):
+            for x in range(int(math.floor(x1)), int(math.floor(x2))+1):
+                for y in range(int(math.floor(y1)), int(math.floor(y2))+1):
+                    files.append(root + source + "/" + source +
+                                 "_TM_{0}_{1}_{2:04d}_{3}.h5".format(product, x, y, year))
+
+    elif product == "ERA_INTERIM":
+        files.append(root + source + "/TP_25-31_147-152_1985-2015.h5")
+ 
+    return files
 
 
 def pixel_drill(product=None, t1=None, t2=None, x=None, y=None):
+
+    v_epoch2datetime = np.vectorize(lambda x: datetime.fromtimestamp(x))
 
     cubes = create_datacube(product=product, t1=t1, t2=t2, x1=x, x2=x+.00025, y1=y, y2=y+.00025)
 
@@ -161,6 +173,15 @@ def test_pixel_drill(products=None, t1=None, t2=None, x=None, y=None):
     return df.to_json(date_format='iso', orient='records')
 
 
+def test_pixel_drill2(sources=None, products=None, t1=None, t2=None, x=None, y=None):
+
+    cube = create_datacube(source=sources, product=products, t1=t1, t2=t2, x1=x, x2=x+.00025, y1=y, y2=y+.00025)
+
+    for tessera in cube:
+        print tessera.product
+
+
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="""Pixel Drill argument parser""")
@@ -175,7 +196,11 @@ if __name__ == "__main__":
     time1 = datetime.strptime(args.start_date, '%Y-%m-%dT%H:%M:%S.%fZ')
     time2 = datetime.strptime(args.end_date, '%Y-%m-%dT%H:%M:%S.%fZ')
 
-    print test_pixel_drill(products=["FC"], t1=time1, t2=time2, x=args.start_x, y=args.start_y)
+    print test_pixel_drill2(sources=["LS5", "LS7"], products=["FC"], t1=time1, t2=time2, x=args.start_x, y=args.start_y)
+
+    #print test_pixel_drill(products=["FC"], t1=time1, t2=time2, x=args.start_x, y=args.start_y)
+
+
 
     #Test with
     # time python datacube_steroids.py 1985-08-01T00:00:00.000Z 2000-09-01T00:00:00.000Z 147.542 -30.6234
