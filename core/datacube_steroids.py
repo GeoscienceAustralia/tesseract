@@ -44,14 +44,14 @@ def create_datacube(source=None, product=None, t1=None, t2=None, x1=None, x2=Non
                     tessera = Tessera(source=src, product=prod)
 
                     with h5py.File(file_name, 'r') as afile:
-
-                        time_dim = afile[product].dims[0][0].value
-                        x_dim = afile[product].dims[1][0].value
-                        y_dim = afile[product].dims[2][0].value
-                        if len(afile[product].shape) == 3:
+                       
+                        time_dim = afile[prod].dims[0][0].value
+                        x_dim = afile[prod].dims[1][0].value
+                        y_dim = afile[prod].dims[2][0].value
+                        if len(afile[prod].shape) == 3:
                             band_dim = np.arange(1)
-                        elif len(afile[product].shape) == 4:
-                            band_dim = afile[product].dims[3][0].value
+                        elif len(afile[prod].shape) == 4:
+                            band_dim = afile[prod].dims[3][0].value
 
                         t1_i = get_index(time.mktime(t1.timetuple()), time_dim)
                         t2_i = get_index(time.mktime(t2.timetuple()), time_dim)
@@ -68,8 +68,8 @@ def create_datacube(source=None, product=None, t1=None, t2=None, x1=None, x2=Non
                         #Select bands from input parameters
                         tessera.b_dim = band_dim
 
-                        tessera.array = afile[product][t1_i:t2_i, x1_i:x2_i, y1_i:y2_i]
-                        #tessera.array = afile[product][t1_i:t2_i, x1_i:x2_i, y1_i:y2_i, :]
+                        tessera.array = afile[prod][t1_i:t2_i, x1_i:x2_i, y1_i:y2_i]
+                        #tessera.array = afile[prod][t1_i:t2_i, x1_i:x2_i, y1_i:y2_i, :]
 
                     tesserae.append(tessera)
 
@@ -83,7 +83,7 @@ def _indexer(root=None, source=None, product=None, t1=None, t2=None, x1=None, x2
 
     files = []
 
-    if product == "LS5" or product == "LS7":
+    if source == "LS5":
     
         for year in range(t1.year, t2.year+1):
             for x in range(int(math.floor(x1)), int(math.floor(x2))+1):
@@ -91,9 +91,18 @@ def _indexer(root=None, source=None, product=None, t1=None, t2=None, x1=None, x2
                     files.append(root + source + "/" + source +
                                  "_TM_{0}_{1}_{2:04d}_{3}.h5".format(product, x, y, year))
 
-    elif product == "ERA_INTERIM":
+    elif source == "LS7":
+    
+        for year in range(t1.year, t2.year+1):
+            for x in range(int(math.floor(x1)), int(math.floor(x2))+1):
+                for y in range(int(math.floor(y1)), int(math.floor(y2))+1):
+                    files.append(root + source + "/" + source +
+                                 "_ETM_{0}_{1}_{2:04d}_{3}.h5".format(product, x, y, year))
+
+
+    elif source == "ERA_INTERIM":
         files.append(root + source + "/TP_25-31_147-152_1985-2015.h5")
- 
+
     return files
 
 
@@ -196,7 +205,7 @@ if __name__ == "__main__":
     time1 = datetime.strptime(args.start_date, '%Y-%m-%dT%H:%M:%S.%fZ')
     time2 = datetime.strptime(args.end_date, '%Y-%m-%dT%H:%M:%S.%fZ')
 
-    print test_pixel_drill2(sources=["LS5", "LS7"], products=["FC"], t1=time1, t2=time2, x=args.start_x, y=args.start_y)
+    test_pixel_drill2(sources=["LS5", "LS7"], products=["FC"], t1=time1, t2=time2, x=args.start_x, y=args.start_y)
 
     #print test_pixel_drill(products=["FC"], t1=time1, t2=time2, x=args.start_x, y=args.start_y)
 
