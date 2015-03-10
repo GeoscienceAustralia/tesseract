@@ -5,6 +5,7 @@ import os.path
 import time
 import numpy as np
 from datetime import datetime
+import pandas as pd
 
 from utils import get_index
 from index.index_factory import IndexFactory
@@ -78,6 +79,26 @@ def get_tesserae(sources=None, products=None, t1=None, t2=None, x1=None, x2=None
     return tesserae
 
 
+def pixel_drill(sources=None, products=None, t1=None, t2=None, x=None, y=None):
+
+    v_epoch2datetime = np.vectorize(lambda x: datetime.fromtimestamp(x))
+
+    cubes = get_tesserae(sources=sources, products=products, t1=t1, t2=t2, x1=x, x2=x+.00025, y1=y, y2=y+.00025)
+
+    dfs = []
+    for cube in cubes:
+        index = v_epoch2datetime(cube.t_dim)
+        dfs.append(pd.DataFrame(np.squeeze(cube.array), index=index,
+                                columns=[cube.product + '_' + str(i) for i in cube.b_dim]))
+
+    df = pd.concat(dfs)
+    df["index"] = df.index
+    df = df.drop_duplicates(cols='index')
+    df = df.drop("index", 1)
+
+    return df
+
+
 if __name__ == "__main__":
 
     t1 = "1985-08-01T00:00:00.000Z"
@@ -86,9 +107,7 @@ if __name__ == "__main__":
     time1 = datetime.strptime(t1, '%Y-%m-%dT%H:%M:%S.%fZ')
     time2 = datetime.strptime(t2, '%Y-%m-%dT%H:%M:%S.%fZ')
 
-    cube = get_tesserae(sources=["LS5", "LS7"], products=["FC"], t1=time1, t2=time2, x1=147.542, x2=147.542,
-                        y1=-30.6234, y2=-30.6234)
+    df = pixel_drill(sources=["LS5", "LS7"], products=["FC"], t1=time1, t2=time2, x=147.542, y=-30.6234)
 
-    for tessera in cube:
-        print tessera.product
-        print tessera.source
+    print df.head(10)
+    print df.tail(10)
