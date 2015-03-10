@@ -92,9 +92,37 @@ def pixel_drill(sources=None, products=None, t1=None, t2=None, x=None, y=None):
                                 columns=[cube.product + '_' + str(i) for i in cube.b_dim]))
 
     df = pd.concat(dfs)
-    df["index"] = df.index
-    df = df.drop_duplicates(cols='index')
+    print("start: {}".format(df.shape))
+
+    df.sort_index(inplace=True)
+    print("sorted index: {}".format(df.shape))
+
+    df["timestamp"] = df.index
+    df = df.drop_duplicates(cols='timestamp')
+    print("dup timestamps: {}".format(df.shape))
+
     df = df.drop("index", 1)
+    df.dropna(how='any', inplace=True)
+    print("drop nan: {}".format(df.shape))
+    print df.shape
+
+    df = df[df.FC_0 != -999]
+    df = df[df.FC_1 != -999]
+    df = df[df.FC_2 != -999]
+
+    print("drop -999: {}".format(df.shape))
+
+    #df = df[['FC_0', 'FC_2', 'FC_1', 'FC_3', 'WOFS_0', 'timestamp']]
+    df.drop('FC_3', axis=1, inplace=True)
+
+    df['Total'] = 10000.0 / (df['FC_0'] + df['FC_2'] + df['FC_1'])
+    df['FC_0'] = df['FC_0'] * df['Total']
+    df['FC_1'] = df['FC_1'] * df['Total']
+    df['FC_2'] = df['FC_2'] * df['Total']
+
+    df.drop('Total', axis=1, inplace=True)
+
+    print("normalised: {}".format(df.shape))
 
     return df
 
@@ -109,5 +137,4 @@ if __name__ == "__main__":
 
     df = pixel_drill(sources=["LS5", "LS7"], products=["FC"], t1=time1, t2=time2, x=147.542, y=-30.6234)
 
-    print df.head(10)
-    print df.tail(10)
+    print df.head()
