@@ -1,4 +1,3 @@
-import math
 import time
 from datetime import datetime
 import h5py
@@ -10,21 +9,6 @@ import argparse
 abs_path = "/g/data/rs0/tiles/EPSG4326_1deg_0.00025pixel_netcdf/HPCData/"
 
 
-class Tessera(object):
-    # Consider integrating satellite information inside id_object
-    def __init__(self, source=None, product=None, t_dim=None, x_dim=None, y_dim=None, b_dim=None, array=None):
-
-        self.source = source
-        self.product = product
-        self.t_dim = t_dim
-        self.x_dim = x_dim
-        self.y_dim = y_dim
-        self.b_dim = b_dim
-        self.array = array
-
-
-def get_index(value, dimension):
-    return np.abs(dimension-value).argmin()
 
         
 def create_datacube(source=None, product=None, t1=None, t2=None, x1=None, x2=None, y1=None, y2=None, bands=None):
@@ -79,31 +63,7 @@ def create_datacube(source=None, product=None, t1=None, t2=None, x1=None, x2=Non
 
 
 #This function will be replaced by an external db indexing the system
-def _indexer(root=None, source=None, product=None, t1=None, t2=None, x1=None, x2=None, y1=None, y2=None):
 
-    files = []
-
-    if source == "LS5":
-    
-        for year in range(t1.year, t2.year+1):
-            for x in range(int(math.floor(x1)), int(math.floor(x2))+1):
-                for y in range(int(math.floor(y1)), int(math.floor(y2))+1):
-                    files.append(root + source + "/" + source +
-                                 "_TM_{0}_{1}_{2:04d}_{3}.h5".format(product, x, y, year))
-
-    elif source == "LS7":
-    
-        for year in range(t1.year, t2.year+1):
-            for x in range(int(math.floor(x1)), int(math.floor(x2))+1):
-                for y in range(int(math.floor(y1)), int(math.floor(y2))+1):
-                    files.append(root + source + "/" + source +
-                                 "_ETM_{0}_{1}_{2:04d}_{3}.h5".format(product, x, y, year))
-
-
-    elif source == "ERA_INTERIM":
-        files.append(root + source + "/TP_25-31_147-152_1985-2015.h5")
-
-    return files
 
 
 def pixel_drill(product=None, t1=None, t2=None, x=None, y=None):
