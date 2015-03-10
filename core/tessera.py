@@ -92,25 +92,12 @@ def pixel_drill_fc(sources=None, products=None, t1=None, t2=None, x=None, y=None
                                 columns=[cube.product + '_' + str(i) for i in cube.b_dim]))
 
     df = pd.concat(dfs)
-    print("start: {}".format(df.shape))
-
     df.sort_index(inplace=True)
-    print("sorted index: {}".format(df.shape))
-
     df["timestamp"] = df.index
-    df = df.drop_duplicates(cols='timestamp')
-    print("dup timestamps: {}".format(df.shape))
-
-    df = df.drop("index", 1)
-    df.dropna(how='any', inplace=True)
-    print("drop nan: {}".format(df.shape))
-    print df.shape
 
     df = df[df.FC_0 != -999]
     df = df[df.FC_1 != -999]
     df = df[df.FC_2 != -999]
-
-    print("drop -999: {}".format(df.shape))
 
     #df = df[['FC_0', 'FC_2', 'FC_1', 'FC_3', 'WOFS_0', 'timestamp']]
     df.drop('FC_3', axis=1, inplace=True)
@@ -133,13 +120,9 @@ def pixel_drill_era_tp(sources=None, products=None, t1=None, t2=None, x=None, y=
 
     cubes = get_tesserae(sources=sources, products=products, t1=t1, t2=t2, x1=x, x2=x+.125, y1=y, y2=y+.125)
 
-    dfs = []
-    for cube in cubes:
-        index = v_epoch2datetime(cube.t_dim)
-        dfs.append(pd.DataFrame(np.squeeze(cube.array), index=index,
-                                columns=[cube.product + '_' + str(i) for i in cube.b_dim]))
-
-    df = pd.concat(dfs)
+    index = v_epoch2datetime(cubes[0].t_dim)
+    print np.squeeze(cubes[0].array).shape
+    df = pd.Series(np.squeeze(cubes[0].array), index=index)
     print("start: {}".format(df.shape))
 
     df.sort_index(inplace=True)

@@ -6,7 +6,7 @@ import math
 
 class EraInterimIndex(Index):
 
-    source = 'era_interim'
+    source = 'ERA_INTERIM'
     abs_path = "/g/data/rs0/tiles/EPSG4326_1deg_0.00025pixel_netcdf/HPCData/ERA_INTERIM/"
 
     __class_description__ = """Class for extracting crop biomass of a plot"""
