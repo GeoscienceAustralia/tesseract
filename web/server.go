@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+        "fmt"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -18,6 +18,8 @@ func drill_fc(w http.ResponseWriter, r *http.Request) {
 
 	out, err := exec.Command("python", "../core/pixel_drill_fc.py", start_date, end_date, lon, lat).Output()
 	if err != nil {
+                fmt.Println(err)
+                fmt.Println(out)
 		log.Fatal(err)
 	}
 
