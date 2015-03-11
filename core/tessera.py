@@ -47,7 +47,6 @@ def get_tesserae(sources=None, products=None, t1=None, t2=None, x1=None, x2=None
                     with h5py.File(file_name, 'r') as hfile:
 
                         time_dim = hfile[product].dims[0][0].value
-                        #swap lat/lon for era_interim!!!
                         x_dim = hfile[product].dims[1][0].value
                         y_dim = hfile[product].dims[2][0].value
 
@@ -118,7 +117,8 @@ def pixel_drill_era_tp(sources=None, products=None, t1=None, t2=None, x=None, y=
 
     v_epoch2datetime = np.vectorize(lambda x: datetime.fromtimestamp(x))
 
-    cubes = get_tesserae(sources=sources, products=products, t1=t1, t2=t2, x1=x, x2=x+.125, y1=y, y2=y+.125)
+    #swap lat/lon for era_interim!!!
+    cubes = get_tesserae(sources=sources, products=products, t1=t1, t2=t2, x1=y, x2=y+.125, y1=x, y2=x+.125)
 
     index = v_epoch2datetime(cubes[0].t_dim)
     print np.squeeze(cubes[0].array).shape
