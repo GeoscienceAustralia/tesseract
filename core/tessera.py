@@ -34,7 +34,7 @@ def get_tesserae(sources=None, products=None, t1=None, t2=None, x1=None, x2=None
 
         for product in products:
 
-            file_names = index.get_files(product, time1, time2, x1, x2, y1, y2)
+            file_names = index.get_files(product, t1, t2, x1, x2, y1, y2)
 
             for file_name in file_names:
 
@@ -79,77 +79,7 @@ def get_tesserae(sources=None, products=None, t1=None, t2=None, x1=None, x2=None
     return tesserae
 
 
-def pixel_drill_fc(sources=None, products=None, t1=None, t2=None, x=None, y=None):
-
-    v_epoch2datetime = np.vectorize(lambda x: datetime.fromtimestamp(x))
-
-    cubes = get_tesserae(sources=sources, products=products, t1=t1, t2=t2, x1=x, x2=x+.00025, y1=y, y2=y+.00025)
-
-    dfs = []
-    for cube in cubes:
-        index = v_epoch2datetime(cube.t_dim)
-        dfs.append(pd.DataFrame(np.squeeze(cube.array), index=index,
-                                columns=[cube.product + '_' + str(i) for i in cube.b_dim]))
-
-    df = pd.concat(dfs)
-    df.sort_index(inplace=True)
-    df["timestamp"] = df.index
-
-    df = df[df.FC_0 != -999]
-    df = df[df.FC_1 != -999]
-    df = df[df.FC_2 != -999]
-
-    #df = df[['FC_0', 'FC_2', 'FC_1', 'FC_3', 'WOFS_0', 'timestamp']]
-    df.drop('FC_3', axis=1, inplace=True)
-
-    df['Total'] = 10000.0 / (df['FC_0'] + df['FC_2'] + df['FC_1'])
-    df['FC_0'] = df['FC_0'] * df['Total']
-    df['FC_1'] = df['FC_1'] * df['Total']
-    df['FC_2'] = df['FC_2'] * df['Total']
-
-    df.drop('Total', axis=1, inplace=True)
-
-    print("normalised: {}".format(df.shape))
-
-    return df
-
-def pixel_drill_wofs(sources=None, products=None, t1=None, t2=None, x=None, y=None):
-
-    v_epoch2datetime = np.vectorize(lambda x: datetime.fromtimestamp(x))
-
-    cubes = get_tesserae(sources=sources, products=products, t1=t1, t2=t2, x1=x, x2=x+.00025, y1=y, y2=y+.00025)
-
-    dfs = []
-    for cube in cubes:
-        index = v_epoch2datetime(cube.t_dim)
-        dfs.append(pd.DataFrame(np.squeeze(cube.array), index=index,
-                                columns=[cube.product + '_' + str(i) for i in cube.b_dim]))
-
-    df = pd.concat(dfs)
-    df.sort_index(inplace=True)
-    df["timestamp"] = df.index
-
-    return df
-
-
-def pixel_drill_era_tp(sources=None, products=None, t1=None, t2=None, x=None, y=None):
-
-    v_epoch2datetime = np.vectorize(lambda x: datetime.fromtimestamp(x))
-
-    cubes = get_tesserae(sources=sources, products=products, t1=t1, t2=t2, x1=x, x2=x+.125, y1=y, y2=y+.125)
-
-    index = v_epoch2datetime(cubes[0].t_dim)
-    df = pd.DataFrame(np.squeeze(cubes[0].array), index=index, columns=["TP"])
-
-    df.sort_index(inplace=True)
-    df["timestamp"] = df.index
-    df = df.drop_duplicates(cols='timestamp')
-
-    #remove negative offset
-    df.TP += (0-df.TP.min())
-
-    #aggregate and return
-    return df.resample("7D", how="sum")
+"""
 
 
 if __name__ == "__main__":
@@ -168,3 +98,4 @@ if __name__ == "__main__":
     df.TP.interpolate(inplace=True)
     df = df[np.isfinite(df['FC_0'])] 
     print df.head(10)
+"""
