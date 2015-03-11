@@ -49,6 +49,9 @@ def get_tesserae(sources=None, products=None, t1=None, t2=None, x1=None, x2=None
                         time_dim = hfile[product].dims[0][0].value
                         x_dim = hfile[product].dims[1][0].value
                         y_dim = hfile[product].dims[2][0].value
+                        print time_dim
+                        print x_dim
+                        print y_dim
 
                         if len(hfile[product].shape) == 3:
                             band_dim = np.arange(1)
@@ -70,6 +73,7 @@ def get_tesserae(sources=None, products=None, t1=None, t2=None, x1=None, x2=None
                         #Select bands from input parameters
                         tessera.b_dim = band_dim
 
+                        print("{}, {}, {}, {}, {}, {}, {}".format(product, t1_i, t2_i, x1_i, x2_i, y1_i, y2_i))
                         tessera.array = hfile[product][t1_i:t2_i, x1_i:x2_i, y1_i:y2_i]
                         #tessera.array = hfile[prod][t1_i:t2_i, x1_i:x2_i, y1_i:y2_i, :]
 
