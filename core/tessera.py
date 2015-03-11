@@ -113,6 +113,24 @@ def pixel_drill_fc(sources=None, products=None, t1=None, t2=None, x=None, y=None
 
     return df
 
+def pixel_drill_wofs(sources=None, products=None, t1=None, t2=None, x=None, y=None):
+
+    v_epoch2datetime = np.vectorize(lambda x: datetime.fromtimestamp(x))
+
+    cubes = get_tesserae(sources=sources, products=products, t1=t1, t2=t2, x1=x, x2=x+.00025, y1=y, y2=y+.00025)
+
+    dfs = []
+    for cube in cubes:
+        index = v_epoch2datetime(cube.t_dim)
+        dfs.append(pd.DataFrame(np.squeeze(cube.array), index=index,
+                                columns=[cube.product + '_' + str(i) for i in cube.b_dim]))
+
+    df = pd.concat(dfs)
+    df.sort_index(inplace=True)
+    df["timestamp"] = df.index
+
+    return df
+
 
 def pixel_drill_era_tp(sources=None, products=None, t1=None, t2=None, x=None, y=None):
 
@@ -143,6 +161,7 @@ if __name__ == "__main__":
     time2 = datetime.strptime(t2, '%Y-%m-%dT%H:%M:%S.%fZ')
 
     df_fc = pixel_drill_fc(sources=["LS5", "LS7"], products=["FC"], t1=time1, t2=time2, x=147.542, y=-30.6234)
+    df_wofs = pixel_drill_fc(sources=["LS5", "LS7"], products=["WOFS"], t1=time1, t2=time2, x=147.542, y=-30.6234)
     df_tp = pixel_drill_era_tp(sources=["ERA_INTERIM"], products=["TP"], t1=time1, t2=time2, x=147.542, y=-30.6234)
 
     df = df_fc.combine_first(df_tp)
