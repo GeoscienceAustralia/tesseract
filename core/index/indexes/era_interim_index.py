@@ -20,6 +20,6 @@ class EraInterimIndex(Index):
 
         files = []
 
-        files.append(self.abs_path + "TP_25-31_147-152_1985-2015.h5")
+        files.append(self.abs_path + "TP_25-31_147-152_1985-2015.nc4")
 
         return files
