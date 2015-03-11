@@ -146,5 +146,6 @@ if __name__ == "__main__":
     df_tp = pixel_drill_era_tp(sources=["ERA_INTERIM"], products=["TP"], t1=time1, t2=time2, x=147.542, y=-30.6234)
 
     df = df_fc.combine_first(df_tp)
-    df.TP.interpolate()
-    print df[2000:2010]
+    df.TP.interpolate(inplace=True)
+    df = df[np.isfinite(df['FC_0'])] 
+    print df.head(10)
