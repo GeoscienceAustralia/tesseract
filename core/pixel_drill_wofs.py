@@ -15,9 +15,10 @@ def pixel_drill_wofs(sources=None, products=None, t1=None, t2=None, x=None, y=No
 
     dfs = []
     for cube in cubes:
-        index = v_epoch2datetime(cube.t_dim)
-        dfs.append(pd.DataFrame(np.squeeze(cube.array), index=index,
-                                columns=[cube.product + '_' + str(i) for i in cube.b_dim]))
+        if len(cube.t_dim) > 0:
+            index = v_epoch2datetime(cube.t_dim)
+            dfs.append(pd.DataFrame(np.squeeze(cube.array), index=index,
+                                    columns=[cube.product + '_' + str(i) for i in cube.b_dim]))
 
     df = pd.concat(dfs)
     df.sort_index(inplace=True)
