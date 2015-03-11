@@ -127,7 +127,11 @@ def pixel_drill_era_tp(sources=None, products=None, t1=None, t2=None, x=None, y=
     df["timestamp"] = df.index
     df = df.drop_duplicates(cols='timestamp')
 
-    return df
+    #remove negative offset
+    df.TP += (0-df.TP.min())
+
+    #aggregate and return
+    return df.resample("7D", how="sum")
 
 
 if __name__ == "__main__":
@@ -138,10 +142,9 @@ if __name__ == "__main__":
     time1 = datetime.strptime(t1, '%Y-%m-%dT%H:%M:%S.%fZ')
     time2 = datetime.strptime(t2, '%Y-%m-%dT%H:%M:%S.%fZ')
 
-    df = pixel_drill_fc(sources=["LS5", "LS7"], products=["FC"], t1=time1, t2=time2, x=147.542, y=-30.6234)
+    df_fc = pixel_drill_fc(sources=["LS5", "LS7"], products=["FC"], t1=time1, t2=time2, x=147.542, y=-30.6234)
+    df_tp = pixel_drill_era_tp(sources=["ERA_INTERIM"], products=["TP"], t1=time1, t2=time2, x=147.542, y=-30.6234)
 
-    print df.head()
-
-    df = pixel_drill_era_tp(sources=["ERA_INTERIM"], products=["TP"], t1=time1, t2=time2, x=147.542, y=-30.6234)
-
-    print df.head()
+    df = df_fc.combine_first(df_tp)
+    df.TP.interpolate()
+    print df[2000:2010]
