@@ -17,14 +17,14 @@ def pixel_drill_era_tp(sources=None, products=None, t1=None, t2=None, x=None, y=
     df = pd.DataFrame(np.squeeze(cubes[0].array), index=index, columns=["TP"])
 
     df.sort_index(inplace=True)
-    df["timestamp"] = df.index
-    df = df.drop_duplicates(cols='timestamp')
 
     #remove negative offset
     df.TP += (0-df.TP.min())
 
     #aggregate and return
-    return df.resample("7D", how="sum")
+    df = df.resample("7D", how="sum")
+    df["timestamp"] = df.index
+    return df
 
 if __name__ == "__main__":
 
@@ -40,4 +40,5 @@ if __name__ == "__main__":
     time2 = datetime.strptime(args.end_date, '%Y-%m-%dT%H:%M:%S.%fZ')
 
     df = pixel_drill_era_tp(sources=["ERA_INTERIM"], products=["TP"], t1=time1, t2=time2, x=args.start_x, y=args.start_y)
+    print df.head() 
     print df.to_json(date_format='iso', orient='records')

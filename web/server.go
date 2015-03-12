@@ -18,11 +18,10 @@ func drill_fc(w http.ResponseWriter, r *http.Request) {
 
 	out, err := exec.Command("python", "../core/pixel_drill_fc.py", start_date, end_date, lon, lat).Output()
 	if err != nil {
-                fmt.Println(err)
-                fmt.Println(out)
 		log.Fatal(err)
 	}
 
+        fmt.Println(out)
 	w.Write([]byte(out))
 }
 
@@ -33,12 +32,17 @@ func drill_wofs(w http.ResponseWriter, r *http.Request) {
 	end_date := params["end_date"]
 	lon := params["lon"]
 	lat := params["lat"]
-
+        
+        fmt.Println(start_date)
+        fmt.Println(end_date)
+        fmt.Println(lon)
+        fmt.Println(lat)
 	out, err := exec.Command("python", "../core/pixel_drill_wofs.py", start_date, end_date, lon, lat).Output()
 	if err != nil {
 		log.Fatal(err)
 	}
 
+        fmt.Println(out)
 	w.Write([]byte(out))
 }
 
@@ -55,6 +59,7 @@ func drill_era_interim(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
+        fmt.Println(out)
 	w.Write([]byte(out))
 }
 
