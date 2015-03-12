@@ -8,7 +8,7 @@ myApp.controller('MainCtrl', function($scope, $http){
     $scope.prod = "FC";
     $scope.start_date = new Date(1987, 1, 1, 0, 0, 0, 0);
     $scope.end_date = new Date(2014, 1, 1, 0, 0, 0, 0);
-    $scope.data_fc = null;
+    $scope.data = null;
     $scope.coords = [null, null];
 
     $scope.update_coords = function(coords) {
@@ -24,7 +24,7 @@ myApp.controller('MainCtrl', function($scope, $http){
                 d.timestamp = parseDate(d.timestamp);
             });
 
-            $scope.data_fc = response;
+            $scope.data = response;
 
         }).error(function(){
             alert("Error ");
@@ -173,7 +173,7 @@ myApp.directive('areaChart', function(){
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 
-    scope.$watch('data_fc', function(data){
+    scope.$watch('data', function(data){
 
       if(!data){
         return;
