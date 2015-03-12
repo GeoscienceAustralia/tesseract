@@ -71,6 +71,7 @@ myApp.controller('MainCtrl', function($scope, $http){
                 });
 
                 $scope.data = response;
+                console.log(response)
 
             }).error(function(){
                 alert("Error ");
@@ -309,11 +310,11 @@ myApp.directive('areChart', function(){
     el.append('<div class="col-md-12">Hello</div>');
 
     var margin = {top: 540, right: 60, bottom: 40, left: 60},
-    width = d3.select("#chart2").node().getBoundingClientRect().width - margin.left - margin.right,
+    width = d3.select("#wofschart").node().getBoundingClientRect().width - margin.left - margin.right,
     //width = 960 - margin.left - margin.right,
     height = (width / 2.618) - margin.top - margin.bottom;
 
-    console.log(d3.select("#chart2").node().getBoundingClientRect())
+    console.log(d3.select("#wofschart").node().getBoundingClientRect())
 
     var x = d3.time.scale()
         .range([0, width]);
