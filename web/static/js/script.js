@@ -17,6 +17,7 @@ myApp.controller('MainCtrl', function($scope, $http){
 
 
     $scope.data_fc = null;
+    $scope.data_wofs = null;
 
     $scope.source_change = function() {
         console.log("Change in sources!!!")
@@ -57,7 +58,6 @@ myApp.controller('MainCtrl', function($scope, $http){
             });
         }
 
-        /*
         if ($scope.products.indexOf('WOFS') > -1 ) {
             $http({
                 method: 'GET',
@@ -77,6 +77,7 @@ myApp.controller('MainCtrl', function($scope, $http){
             });
         }
 
+        /*
         if ($scope.products.indexOf('ERA Interim TP') > -1 ) {
             $http({
                 method: 'GET',
@@ -229,6 +230,124 @@ myApp.directive('areaChart', function(){
             return d.values; 
         });
 
+
+
+
+    scope.$watch('data', function(data){
+
+      if(!data){
+        return;
+      }
+
+      // Clean before plotting
+      d3.select("svg").remove();
+
+      var svg = d3.select("#chart").append("svg")
+                  //.attr("class", "col-md-12")
+                  .attr("width", width + margin.left + margin.right)
+                  .attr("height", height + margin.top + margin.bottom)
+                  .append("g")
+                  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+      color.domain(d3.keys(data[0]).filter(function(key) { return key !== "timestamp"; }));
+
+      var browsers = stack(color.domain().map(function(name) {
+        return {
+          name: name,
+          values: data.map(function(d) {
+            return {date: d.timestamp, y: d[name] / 10000};
+          })
+        };
+
+      }));
+
+      x.domain(d3.extent(data, function(d) { return d.timestamp; }));
+
+      var browser = svg.selectAll(".browser")
+          .data(browsers)
+          .enter().append("g")
+          .attr("class", "browser");
+
+      browser.append("path")
+          .attr("class", "area")
+          .attr("d", function(d) { return area(d.values); })
+          .style("fill", function(d) { return color(d.name); });
+
+      browser.append("text")
+          .datum(function(d) { return {name: d.name, value: d.values[d.values.length - 1]}; })
+          .attr("transform", function(d) { return "translate(" + x(d.value.date) + "," + y(d.value.y0 + d.value.y / 2) + ")"; })
+          .attr("x", -6)
+          .attr("dy", ".35em")
+          .text(function(d) { return d.name; });
+
+      svg.append("g")
+          .attr("class", "x axis")
+          .attr("transform", "translate(0," + height + ")")
+          .call(xAxis);
+
+      svg.append("g")
+          .attr("class", "y axis")
+          .call(yAxis);
+
+    }, true);
+
+  }
+  return {
+    link: link,
+    restrict: 'E',
+    scope: { data: '=' }
+  };
+});
+
+
+
+myApp.directive('areaChart2', function(){
+
+  function link(scope, el, attr){
+
+    el.append('<div id="chart2" class="col-md-12"></div>');
+
+    var margin = {top: 40, right: 60, bottom: 40, left: 60},
+    width = d3.select("#chart2").node().getBoundingClientRect().width - margin.left - margin.right,
+    //width = 960 - margin.left - margin.right,
+    height = (width / 2.618) - margin.top - margin.bottom;
+
+    console.log(d3.select("#chart2").node().getBoundingClientRect())
+
+    var formatPercent = d3.format(".0%");
+
+    var x = d3.time.scale()
+        .range([0, width]);
+
+    var y = d3.scale.linear()
+        .range([height, 0]);
+
+    //var color = d3.scale.category20();
+    var color = d3.scale.ordinal()
+                  .domain(["FC0", "FC2", "FC1"])
+                  .range(["#D9A88F", "#F9D3A5", "#AB9C73"]);
+
+
+
+
+    var x = d3.time.scale()
+        .range([0, width]);
+
+    var y = d3.scale.linear()
+        .range([height, 0]);
+
+    var xAxis = d3.svg.axis()
+        .scale(x)
+        .orient("bottom");
+
+    var yAxis = d3.svg.axis()
+        .scale(y)
+        .orient("left");
+
+    var area = d3.svg.area()
+        .x(function(d) { return x(d.date); })
+        .y0(height)
+        .y1(function(d) { return y(d.close); });
 
 
 
