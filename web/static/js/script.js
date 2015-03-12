@@ -305,7 +305,8 @@ myApp.directive('areChart', function(){
 
   function link(scope, el, attr){
 
-    el.append('<div id="chart2" class="col-md-12"></div>');
+    el.append('<div id="wofschart" class="col-md-12"></div>');
+    el.append('<div class="col-md-12">Hello</div>');
 
     var margin = {top: 540, right: 60, bottom: 40, left: 60},
     width = d3.select("#chart2").node().getBoundingClientRect().width - margin.left - margin.right,
@@ -344,7 +345,7 @@ myApp.directive('areChart', function(){
       // Clean before plotting
       d3.select("#wofs_chart").remove();
 
-      var svg = d3.select("#chart2").append("svg")
+      var svg = d3.select("#wofschart").append("svg")
                   .attr("id", "wofs_chart")
                   .attr("width", width + margin.left + margin.right)
                   .attr("height", height + margin.top + margin.bottom)
