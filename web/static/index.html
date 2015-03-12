@@ -107,9 +107,14 @@ body {
 
                 <div class="form-group">
                     <div class="row">
-                        <label for="product">Product:</label>
+                        <label for="products">Product:</label>
                     </div>
-                    <select id="product" class="form-control" ng-options="item for item in products"></select>
+                    <ul id="products" >
+                        <li ng-repeat="prod in products">
+                          {{prod}}
+                        </li>
+                    </ul>
+
                 </div>
 
                 <div class="form-group">
@@ -145,7 +150,7 @@ body {
         <h3>Time Series Stacked Chart:</h3>
         <hr>
 
-        <area-chart data="data"></area-chart>
+        <area-chart data="data_fc"></area-chart>
 
 
     </div>

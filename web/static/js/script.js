@@ -7,6 +7,7 @@ myApp.controller('MainCtrl', function($scope, $http){
     $scope.ls5 = true;
     $scope.ls7 = true;
     $scope.era = false;
+    $scope.prod = null;
 
     $scope.products = [];
 
@@ -15,7 +16,7 @@ myApp.controller('MainCtrl', function($scope, $http){
     $scope.coords = [null, null];
 
 
-    $scope.data = null;
+    $scope.data_fc = null;
 
     $scope.source_change = function() {
         console.log("Change in sources!!!")
@@ -27,7 +28,7 @@ myApp.controller('MainCtrl', function($scope, $http){
             $scope.products.push("WOFS")
         }
         if ($scope.era) {
-            $scope.products.push("T. Prpt")
+            $scope.products.push("ERA Interim TP")
         }
         console.log($scope.products)
     }
@@ -36,22 +37,65 @@ myApp.controller('MainCtrl', function($scope, $http){
 
     $scope.update_coords = function(coords) {
         console.log("update_ts_with_coords: " + coords)
-        $http({
-            method: 'GET',
-            url: "/pixel_drill_fc/" + $scope.start_date.toISOString() + "/" + $scope.end_date.toISOString() + "/" + $scope.coords[0] + "/" + $scope.coords[1] + "/",
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'}
-        }).success(function(response){
-            var parseDate = d3.time.format("%Y-%m-%dT%H:%M:%S.%LZ").parse
 
-            response.forEach(function(d) {
-                d.timestamp = parseDate(d.timestamp);
+        if ($scope.products.indexOf('FC') > -1 ) {
+            $http({
+                method: 'GET',
+                url: "/pixel_drill_fc/" + $scope.start_date.toISOString() + "/" + $scope.end_date.toISOString() + "/" + $scope.coords[0] + "/" + $scope.coords[1] + "/",
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+            }).success(function(response){
+                var parseDate = d3.time.format("%Y-%m-%dT%H:%M:%S.%LZ").parse
+
+                response.forEach(function(d) {
+                    d.timestamp = parseDate(d.timestamp);
+                });
+
+                $scope.data_fc = response;
+
+            }).error(function(){
+                alert("Error ");
             });
+        }
 
-            $scope.data = response;
+        /*
+        if ($scope.products.indexOf('WOFS') > -1 ) {
+            $http({
+                method: 'GET',
+                url: "/pixel_drill_wofs/" + $scope.start_date.toISOString() + "/" + $scope.end_date.toISOString() + "/" + $scope.coords[0] + "/" + $scope.coords[1] + "/",
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+            }).success(function(response){
+                var parseDate = d3.time.format("%Y-%m-%dT%H:%M:%S.%LZ").parse
 
-        }).error(function(){
-            alert("Error ");
-        });
+                response.forEach(function(d) {
+                    d.timestamp = parseDate(d.timestamp);
+                });
+
+                $scope.data = response;
+
+            }).error(function(){
+                alert("Error ");
+            });
+        }
+
+        if ($scope.products.indexOf('ERA Interim TP') > -1 ) {
+            $http({
+                method: 'GET',
+                url: "/pixel_drill_era_interim/" + $scope.start_date.toISOString() + "/" + $scope.end_date.toISOString() + "/" + $scope.coords[0] + "/" + $scope.coords[1] + "/",
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+            }).success(function(response){
+                var parseDate = d3.time.format("%Y-%m-%dT%H:%M:%S.%LZ").parse
+
+                response.forEach(function(d) {
+                    d.timestamp = parseDate(d.timestamp);
+                });
+
+                $scope.data = response;
+
+            }).error(function(){
+                alert("Error ");
+            });
+        }*/
+
     };
 
 });
