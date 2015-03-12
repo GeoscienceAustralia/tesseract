@@ -4,6 +4,10 @@ var myApp = angular.module('myApp', []);
 
 myApp.controller('MainCtrl', function($scope, $http){
 
+    $scope.ls5 = true;
+    $scope.ls7 = true;
+    $scope.era = true;
+
     $scope.sat = "LS5";
     $scope.prod = "FC";
     $scope.start_date = new Date(1987, 1, 1, 0, 0, 0, 0);
