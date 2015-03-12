@@ -18,6 +18,9 @@ myApp.controller('MainCtrl', function($scope, $http){
     $scope.data = null;
 
     $scope.source_change = function() {
+        console.log("Change in sources!!!")
+        console.log($scope.products)
+
         $scope.products = [];
         if ($scope.ls5 || $scope.ls7) {
             $scope.products.push("FC")
@@ -26,6 +29,7 @@ myApp.controller('MainCtrl', function($scope, $http){
         if ($scope.era) {
             $scope.products.push("T. Prpt")
         }
+        console.log($scope.products)
     }
 
     $scope.source_change();
