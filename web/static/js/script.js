@@ -162,15 +162,7 @@ myApp.directive('areaChart', function(){
             return d.values; 
         });
 
-    // Clean before plotting
-    d3.select("svg").remove();
 
-    var svg = d3.select("#chart").append("svg")
-        //.attr("class", "col-md-12")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 
     scope.$watch('data', function(data){
@@ -178,6 +170,16 @@ myApp.directive('areaChart', function(){
       if(!data){
         return;
       }
+
+      // Clean before plotting
+      d3.select("svg").remove();
+
+      var svg = d3.select("#chart").append("svg")
+                  //.attr("class", "col-md-12")
+                  .attr("width", width + margin.left + margin.right)
+                  .attr("height", height + margin.top + margin.bottom)
+                  .append("g")
+                  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
       color.domain(d3.keys(data[0]).filter(function(key) { return key !== "timestamp"; }));
 
