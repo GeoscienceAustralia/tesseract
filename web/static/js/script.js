@@ -6,7 +6,7 @@ myApp.controller('MainCtrl', function($scope, $http){
 
     $scope.ls5 = true;
     $scope.ls7 = true;
-    $scope.era = true;
+    $scope.era = false;
 
     $scope.sat = "LS5";
     $scope.prod = "FC";
