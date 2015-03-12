@@ -309,10 +309,12 @@ myApp.directive('areChart', function(){
     el.append('<div id="wofschart" class="col-md-12"></div>');
     el.append('<div class="col-md-12">Hello</div>');
 
-    var margin = {top: 540, right: 60, bottom: 40, left: 60},
+    var margin = {top: 40, right: 60, bottom: 40, left: 60},
     width = d3.select("#wofschart").node().getBoundingClientRect().width - margin.left - margin.right,
     //width = 960 - margin.left - margin.right,
     height = (width / 2.618) - margin.top - margin.bottom;
+
+    console.log(width + " " + height)
 
     console.log(d3.select("#wofschart").node().getBoundingClientRect())
 
@@ -356,6 +358,10 @@ myApp.directive('areChart', function(){
 
       x.domain(d3.extent(data, function(d) { return d.timestamp; }));
       y.domain([0, d3.max(data, function(d) { return d.WOFS_0; })]);
+
+      console.log("max min of WOFS_0");
+      console.log(d3.max(data, function(d) { return d.WOFS_0; }));
+      console.log(d3.min(data, function(d) { return d.WOFS_0; }));
 
       svg.append("path")
           .datum(data)
