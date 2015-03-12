@@ -90,27 +90,21 @@ body {
             <form role="form">
                 <div class="form-group">
                     <div class="row">
+                        <label for="sources">Sources:</label>
+                    </div>
+                    <div id="sources" class="row">
                         <label class="checkbox-inline">
-                          <input type="checkbox" id="inlineCheckbox1" value="option1"> LS5
+                          <input type="checkbox" id="ls5" ng-model="ls5"> LS5
                         </label>
                         <label class="checkbox-inline">
-                          <input type="checkbox" id="inlineCheckbox2" value="option2"> LS7
+                          <input type="checkbox" id="ls7" value="ls7"> LS7
                         </label>
                         <label class="checkbox-inline">
-                          <input type="checkbox" id="inlineCheckbox3" value="option3"> ERA
+                          <input type="checkbox" id="era" value="era"> ERA
                         </label>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <div class="row">
-                        <label for="satellite">Satellite:</label>
-                    </div>
-                    <select id="satellite" class="form-control" ng-model="sat">
-                        <option ng-selected="selected">LS5</option>
-                        <option>LS7</option>
-                    </select>
-                </div>
                 <div class="form-group">
                     <div class="row">
                         <label for="product">Product:</label>
@@ -120,6 +114,7 @@ body {
                         <option>NBAR</option>
                     </select>
                 </div>
+
                 <div class="form-group">
                      <div class="row">
                         <label for="start_date" class="control-label">Start Date:</label>
