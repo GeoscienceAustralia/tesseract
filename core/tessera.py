@@ -28,9 +28,13 @@ def get_tesserae(sources=None, products=None, t1=None, t2=None, x1=None, x2=None
 
     tesserae = []
 
-    print("{sources} {products} {t} {t2} {x1} {x2} {y1} {y2} {bands}".format(sources=sources, products=products, t1=t1,
-                                                                             t2=t2, x1=x1, x2=x2, y1=y1,
-                                                                             y2=y2))
+    print(sources)
+    print(t1)
+    print(t2)
+    print(x1)
+    print(x2)
+    print(y1)
+    print(y2)
 
     for source in sources:
 
@@ -72,9 +76,14 @@ def get_tesserae(sources=None, products=None, t1=None, t2=None, x1=None, x2=None
                         #Select bands from input parameters
                         tessera.b_dim = band_dim
 
-                        print("{product} {t} {t2} {x1} {x2} {y1} {y2} {bands}".format(product=product, t1=t1_i,
-                                                                             t2=t2_i, x1=x1_i, x2=x2_i, y1=y1_i,
-                                                                             y2=y2_i))
+                        print(product)
+                        print(t1_i)
+                        print(t2_i)
+                        print(x1_i)
+                        print(x2_i)
+                        print(y1_i)
+                        print(y2_i)
+
 
                         tessera.array = hfile[product][t1_i:t2_i, x1_i:x2_i, y1_i:y2_i]
                         #tessera.array = hfile[prod][t1_i:t2_i, x1_i:x2_i, y1_i:y2_i, :]
