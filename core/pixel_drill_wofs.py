@@ -39,5 +39,5 @@ if __name__ == "__main__":
     time1 = datetime.strptime(args.start_date, '%Y-%m-%dT%H:%M:%S.%fZ')
     time2 = datetime.strptime(args.end_date, '%Y-%m-%dT%H:%M:%S.%fZ')
 
-    df = pixel_drill_wofs(sources=["LS5"], products=["WOFS"], t1=time1, t2=time2, x=args.start_x, y=args.start_y)
+    df = pixel_drill_wofs(sources=["LS5", "LS7"], products=["WOFS"], t1=time1, t2=time2, x=args.start_x, y=args.start_y)
     print df.to_json(date_format='iso', orient='records')

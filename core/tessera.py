@@ -28,14 +28,6 @@ def get_tesserae(sources=None, products=None, t1=None, t2=None, x1=None, x2=None
 
     tesserae = []
 
-    print(sources)
-    print(t1)
-    print(t2)
-    print(x1)
-    print(x2)
-    print(y1)
-    print(y2)
-
     for source in sources:
 
         index = IndexFactory(source)
@@ -43,11 +35,10 @@ def get_tesserae(sources=None, products=None, t1=None, t2=None, x1=None, x2=None
         for product in products:
 
             file_names = index.get_files(product, t1, t2, x1, x2, y1, y2)
-
+            
             for file_name in file_names:
 
                 if os.path.isfile(file_name):
-                    print file_name
                     tessera = Tessera(source=source, product=product)
 
                     with h5py.File(file_name, 'r') as hfile:
@@ -61,7 +52,6 @@ def get_tesserae(sources=None, products=None, t1=None, t2=None, x1=None, x2=None
                         elif len(hfile[product].shape) == 4:
                             band_dim = hfile[product].dims[3][0].value
                         
-                        print time_dim
                         t1_i = get_index(time.mktime(t1.timetuple()), time_dim)
                         t2_i = get_index(time.mktime(t2.timetuple()), time_dim)
                         tessera.t_dim = time_dim[t1_i:t2_i]
@@ -76,15 +66,6 @@ def get_tesserae(sources=None, products=None, t1=None, t2=None, x1=None, x2=None
 
                         #Select bands from input parameters
                         tessera.b_dim = band_dim
-
-                        print(product)
-                        print(t1_i)
-                        print(t2_i)
-                        print(x1_i)
-                        print(x2_i)
-                        print(y1_i)
-                        print(y2_i)
-
 
                         tessera.array = hfile[product][t1_i:t2_i, x1_i:x2_i, y1_i:y2_i]
                         #tessera.array = hfile[prod][t1_i:t2_i, x1_i:x2_i, y1_i:y2_i, :]

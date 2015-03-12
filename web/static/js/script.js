@@ -19,7 +19,7 @@ myApp.controller('MainCtrl', function($scope, $http){
         console.log("update_ts_with_coords: " + coords)
         $http({
             method: 'GET',
-            url: "/pixel_drill/" + $scope.start_date.toISOString() + "/" + $scope.end_date.toISOString() + "/" + $scope.coords[0] + "/" + $scope.coords[1] + "/",
+            url: "/pixel_drill_fc/" + $scope.start_date.toISOString() + "/" + $scope.end_date.toISOString() + "/" + $scope.coords[0] + "/" + $scope.coords[1] + "/",
             headers: {'Content-Type': 'application/x-www-form-urlencoded'}
         }).success(function(response){
             var parseDate = d3.time.format("%Y-%m-%dT%H:%M:%S.%LZ").parse
@@ -166,15 +166,7 @@ myApp.directive('areaChart', function(){
             return d.values; 
         });
 
-    // Clean before plotting
-    d3.select("svg").remove();
 
-    var svg = d3.select("#chart").append("svg")
-        //.attr("class", "col-md-12")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 
     scope.$watch('data', function(data){
@@ -182,6 +174,16 @@ myApp.directive('areaChart', function(){
       if(!data){
         return;
       }
+
+      // Clean before plotting
+      d3.select("svg").remove();
+
+      var svg = d3.select("#chart").append("svg")
+                  //.attr("class", "col-md-12")
+                  .attr("width", width + margin.left + margin.right)
+                  .attr("height", height + margin.top + margin.bottom)
+                  .append("g")
+                  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
       color.domain(d3.keys(data[0]).filter(function(key) { return key !== "timestamp"; }));
 
