@@ -337,6 +337,10 @@ myApp.directive('areChart', function(){
         .y0(height)
         .y1(function(d) { return y(d.WOFS_0); });
 
+    console.log("max min of WOFS_0");
+    console.log(d3.max($scope.data_wofs, function(d) { return d.WOFS_0; }));
+    console.log(d3.min($scope.data_wofs, function(d) { return d.WOFS_0; }));
+
 
 
     scope.$watch('data', function(data){
@@ -359,9 +363,7 @@ myApp.directive('areChart', function(){
       x.domain(d3.extent(data, function(d) { return d.timestamp; }));
       y.domain([0, d3.max(data, function(d) { return d.WOFS_0; })]);
 
-      console.log("max min of WOFS_0");
-      console.log(d3.max(data, function(d) { return d.WOFS_0; }));
-      console.log(d3.min(data, function(d) { return d.WOFS_0; }));
+
 
       svg.append("path")
           .datum(data)
