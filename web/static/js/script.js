@@ -8,12 +8,27 @@ myApp.controller('MainCtrl', function($scope, $http){
     $scope.ls7 = true;
     $scope.era = false;
 
-    $scope.sat = "LS5";
-    $scope.prod = "FC";
+    $scope.products = [];
+
     $scope.start_date = new Date(1987, 1, 1, 0, 0, 0, 0);
     $scope.end_date = new Date(2014, 1, 1, 0, 0, 0, 0);
-    $scope.data = null;
     $scope.coords = [null, null];
+
+
+    $scope.data = null;
+
+    $scope.source_change = function() {
+        $scope.products = [];
+        if ($scope.ls5 || $scope.ls7) {
+            $scope.products.push("FC")
+            $scope.products.push("WOFS")
+        }
+        if ($scope.era) {
+            $scope.products.push("T. Prpt")
+        }
+    }
+
+    $scope.source_change();
 
     $scope.update_coords = function(coords) {
         console.log("update_ts_with_coords: " + coords)

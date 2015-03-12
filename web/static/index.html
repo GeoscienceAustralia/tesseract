@@ -94,13 +94,13 @@ body {
                     </div>
                     <div id="sources" class="row">
                         <label class="checkbox-inline">
-                          <input type="checkbox" id="ls5" ng-model="ls5"> LS5
+                          <input type="checkbox" id="ls5" ng-model="ls5" ng-change="source_change()"> LS5
                         </label>
                         <label class="checkbox-inline">
-                          <input type="checkbox" id="ls7" ng-model="ls7"> LS7
+                          <input type="checkbox" id="ls7" ng-model="ls7" ng-change="source_change()> LS7
                         </label>
                         <label class="checkbox-inline">
-                          <input type="checkbox" id="era" ng-model="era"> ERA
+                          <input type="checkbox" id="era" ng-model="era" ng-change="source_change()> ERA
                         </label>
                     </div>
                 </div>
@@ -109,10 +109,7 @@ body {
                     <div class="row">
                         <label for="product">Product:</label>
                     </div>
-                    <select id="product" class="form-control" ng-model="prod">
-                        <option ng-selected="selected">FC</option>
-                        <option>NBAR</option>
-                    </select>
+                    <select id="product" class="form-control" ng-options="item for item in products"></select>
                 </div>
 
                 <div class="form-group">
