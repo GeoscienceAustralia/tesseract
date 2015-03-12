@@ -301,34 +301,18 @@ myApp.directive('areaChart', function(){
 
 
 
-myApp.directive('areaChart2', function(){
+myApp.directive('areChart', function(){
 
   function link(scope, el, attr){
 
     el.append('<div id="chart2" class="col-md-12"></div>');
 
-    var margin = {top: 40, right: 60, bottom: 40, left: 60},
+    var margin = {top: 540, right: 60, bottom: 40, left: 60},
     width = d3.select("#chart2").node().getBoundingClientRect().width - margin.left - margin.right,
     //width = 960 - margin.left - margin.right,
     height = (width / 2.618) - margin.top - margin.bottom;
 
     console.log(d3.select("#chart2").node().getBoundingClientRect())
-
-    var formatPercent = d3.format(".0%");
-
-    var x = d3.time.scale()
-        .range([0, width]);
-
-    var y = d3.scale.linear()
-        .range([height, 0]);
-
-    //var color = d3.scale.category20();
-    var color = d3.scale.ordinal()
-                  .domain(["FC0", "FC2", "FC1"])
-                  .range(["#D9A88F", "#F9D3A5", "#AB9C73"]);
-
-
-
 
     var x = d3.time.scale()
         .range([0, width]);
@@ -347,7 +331,7 @@ myApp.directive('areaChart2', function(){
     var area = d3.svg.area()
         .x(function(d) { return x(d.date); })
         .y0(height)
-        .y1(function(d) { return y(d.close); });
+        .y1(function(d) { return y(d.WOFS_0); });
 
 
 
