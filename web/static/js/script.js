@@ -16,8 +16,8 @@ myApp.controller('MainCtrl', function($scope, $http){
     $scope.coords = [null, null];
 
 
-    $scope.data_fc = null;
-    $scope.data_wofs = null;
+    $scope.datafc = null;
+    $scope.datawofs = null;
 
     $scope.source_change = function() {
         console.log("Change in sources!!!")
@@ -337,9 +337,6 @@ myApp.directive('areChart', function(){
         .y0(height)
         .y1(function(d) { return y(d.WOFS_0); });
 
-    console.log("max min of WOFS_0");
-    console.log(d3.max($scope.data_wofs, function(d) { return d.WOFS_0; }));
-    console.log(d3.min($scope.data_wofs, function(d) { return d.WOFS_0; }));
 
 
 
