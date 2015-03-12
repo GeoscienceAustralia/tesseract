@@ -367,36 +367,14 @@ myApp.directive('areaChart2', function(){
                   .append("g")
                   .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-      color.domain(d3.keys(data[0]).filter(function(key) { return key !== "timestamp"; }));
-
-      var browsers = stack(color.domain().map(function(name) {
-        return {
-          name: name,
-          values: data.map(function(d) {
-            return {date: d.timestamp, y: d[name] / 10000};
-          })
-        };
-
-      }));
 
       x.domain(d3.extent(data, function(d) { return d.timestamp; }));
+      y.domain([0, d3.max(data, function(d) { return d.WOFS_0; })]);
 
-      var browser = svg.selectAll(".browser")
-          .data(browsers)
-          .enter().append("g")
-          .attr("class", "browser");
-
-      browser.append("path")
+      svg.append("path")
+          .datum(data)
           .attr("class", "area")
-          .attr("d", function(d) { return area(d.values); })
-          .style("fill", function(d) { return color(d.name); });
-
-      browser.append("text")
-          .datum(function(d) { return {name: d.name, value: d.values[d.values.length - 1]}; })
-          .attr("transform", function(d) { return "translate(" + x(d.value.date) + "," + y(d.value.y0 + d.value.y / 2) + ")"; })
-          .attr("x", -6)
-          .attr("dy", ".35em")
-          .text(function(d) { return d.name; });
+          .attr("d", area);
 
       svg.append("g")
           .attr("class", "x axis")
@@ -405,7 +383,13 @@ myApp.directive('areaChart2', function(){
 
       svg.append("g")
           .attr("class", "y axis")
-          .call(yAxis);
+          .call(yAxis)
+        .append("text")
+          .attr("transform", "rotate(-90)")
+          .attr("y", 6)
+          .attr("dy", ".71em")
+          .style("text-anchor", "end")
+          .text("WOFS");
 
     }, true);
 
