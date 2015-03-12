@@ -240,10 +240,10 @@ myApp.directive('areaChart', function(){
       }
 
       // Clean before plotting
-      d3.select("svg").remove();
+      d3.select("#fc_chart").remove();
 
       var svg = d3.select("#chart").append("svg")
-                  //.attr("class", "col-md-12")
+                  .attr("id", "fc_chart")
                   .attr("width", width + margin.left + margin.right)
                   .attr("height", height + margin.top + margin.bottom)
                   .append("g")
@@ -358,10 +358,10 @@ myApp.directive('areaChart2', function(){
       }
 
       // Clean before plotting
-      d3.select("svg").remove();
+      d3.select("#wofs_chart").remove();
 
-      var svg = d3.select("#chart").append("svg")
-                  //.attr("class", "col-md-12")
+      var svg = d3.select("#chart2").append("svg")
+                  .attr("id", "wofs_chart")
                   .attr("width", width + margin.left + margin.right)
                   .attr("height", height + margin.top + margin.bottom)
                   .append("g")
