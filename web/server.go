@@ -1,15 +1,15 @@
 package main
 
 import (
-        "fmt"
-	"github.com/gorilla/mux"
+        "fmt"	
+        "github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"os/exec"
 )
 
 func drill_fc(w http.ResponseWriter, r *http.Request) {
-
+        fmt.Println("Drill FC called!")
 	params := mux.Vars(r)
 	start_date := params["start_date"]
 	end_date := params["end_date"]
@@ -21,11 +21,11 @@ func drill_fc(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-        fmt.Println(out)
 	w.Write([]byte(out))
 }
 
 func drill_wofs(w http.ResponseWriter, r *http.Request) {
+        fmt.Println("Drill WOFS called!")
 
 	params := mux.Vars(r)
 	start_date := params["start_date"]
@@ -33,20 +33,16 @@ func drill_wofs(w http.ResponseWriter, r *http.Request) {
 	lon := params["lon"]
 	lat := params["lat"]
         
-        fmt.Println(start_date)
-        fmt.Println(end_date)
-        fmt.Println(lon)
-        fmt.Println(lat)
 	out, err := exec.Command("python", "../core/pixel_drill_wofs.py", start_date, end_date, lon, lat).Output()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-        fmt.Println(out)
 	w.Write([]byte(out))
 }
 
 func drill_era_interim(w http.ResponseWriter, r *http.Request) {
+        fmt.Println("Drill ERA called!")
 
 	params := mux.Vars(r)
 	start_date := params["start_date"]
@@ -59,7 +55,6 @@ func drill_era_interim(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-        fmt.Println(out)
 	w.Write([]byte(out))
 }
 
