@@ -39,7 +39,7 @@ def get_tesserae(sources=None, products=None, t1=None, t2=None, x1=None, x2=None
             for file_name in file_names:
 
                 if os.path.isfile(file_name):
-
+                    print file_name
                     tessera = Tessera(source=source, product=product)
 
                     with h5py.File(file_name, 'r') as hfile:
@@ -52,7 +52,8 @@ def get_tesserae(sources=None, products=None, t1=None, t2=None, x1=None, x2=None
                             band_dim = np.arange(1)
                         elif len(hfile[product].shape) == 4:
                             band_dim = hfile[product].dims[3][0].value
-
+                        
+                        print time_dim
                         t1_i = get_index(time.mktime(t1.timetuple()), time_dim)
                         t2_i = get_index(time.mktime(t2.timetuple()), time_dim)
                         tessera.t_dim = time_dim[t1_i:t2_i]
