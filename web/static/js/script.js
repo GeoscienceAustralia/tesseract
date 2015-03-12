@@ -8,14 +8,14 @@ myApp.controller('MainCtrl', function($scope, $http){
     $scope.prod = "FC";
     $scope.start_date = new Date(1987, 1, 1, 0, 0, 0, 0);
     $scope.end_date = new Date(2014, 1, 1, 0, 0, 0, 0);
-    $scope.data = null;
+    $scope.data_fc = null;
     $scope.coords = [null, null];
 
     $scope.update_coords = function(coords) {
         console.log("update_ts_with_coords: " + coords)
         $http({
             method: 'GET',
-            url: "/pixel_drill/" + $scope.start_date.toISOString() + "/" + $scope.end_date.toISOString() + "/" + $scope.coords[0] + "/" + $scope.coords[1] + "/",
+            url: "/pixel_drill_fc/" + $scope.start_date.toISOString() + "/" + $scope.end_date.toISOString() + "/" + $scope.coords[0] + "/" + $scope.coords[1] + "/",
             headers: {'Content-Type': 'application/x-www-form-urlencoded'}
         }).success(function(response){
             var parseDate = d3.time.format("%Y-%m-%dT%H:%M:%S.%LZ").parse
@@ -24,7 +24,7 @@ myApp.controller('MainCtrl', function($scope, $http){
                 d.timestamp = parseDate(d.timestamp);
             });
 
-            $scope.data = response;
+            $scope.data_fc = response;
 
         }).error(function(){
             alert("Error ");
@@ -173,7 +173,7 @@ myApp.directive('areaChart', function(){
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 
-    scope.$watch('data', function(data){
+    scope.$watch('data_fc', function(data){
 
       if(!data){
         return;
