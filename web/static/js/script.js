@@ -182,7 +182,6 @@ myApp.directive('clickableMap', function(){
   };
 });
 
-/*
 myApp.directive('areaChart', function(){
 
   function link(scope, el, attr){
@@ -381,7 +380,7 @@ myApp.directive('areChart', function(){
     scope: { data: '=' }
   };
 });
-*/
+
 
 myApp.directive('arChart', function(){
 
