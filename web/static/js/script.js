@@ -308,7 +308,7 @@ myApp.directive('areChart', function(){
     var margin = {top: 40, right: 60, bottom: 40, left: 60},
     width = d3.select("#wofschart").node().getBoundingClientRect().width - margin.left - margin.right,
     //width = 960 - margin.left - margin.right,
-    height = (width / 2.618) - margin.top - margin.bottom;
+    height = (width / 4) - margin.top - margin.bottom;
 
     console.log(d3.select("#wofschart").node().getBoundingClientRect())
 
