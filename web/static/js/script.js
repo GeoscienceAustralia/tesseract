@@ -307,15 +307,11 @@ myApp.directive('areChart', function(){
   function link(scope, el, attr){
 
     el.append('<div id="wofschart" class="col-md-12"></div>');
-    el.append('<div class="col-md-12">Hello</div>');
 
     var margin = {top: 40, right: 60, bottom: 40, left: 60},
     width = d3.select("#wofschart").node().getBoundingClientRect().width - margin.left - margin.right,
     //width = 960 - margin.left - margin.right,
     height = (width / 2.618) - margin.top - margin.bottom;
-
-    console.log(width + " " + height)
-    console.log("Que cono esta pasando aqui!")
 
     console.log(d3.select("#wofschart").node().getBoundingClientRect())
 
@@ -341,6 +337,9 @@ myApp.directive('areChart', function(){
 
     scope.$watch('data', function(data){
 
+      console.log("Que estoy recibiendo?")
+      console.log(data)
+
       if(!data){
         return;
       }
@@ -354,7 +353,6 @@ myApp.directive('areChart', function(){
                   .attr("height", height + margin.top + margin.bottom)
                   .append("g")
                   .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
 
       x.domain(d3.extent(data, function(d) { return d.timestamp; }));
       y.domain([0, d3.max(data, function(d) { return d.WOFS_0; })]);
