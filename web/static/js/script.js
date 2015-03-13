@@ -182,7 +182,6 @@ myApp.directive('clickableMap', function(){
   };
 });
 
-/*
 myApp.directive('areaChart', function(){
 
   function link(scope, el, attr){
@@ -219,7 +218,7 @@ myApp.directive('areaChart', function(){
         .tickFormat(formatPercent);
 
     var area = d3.svg.area()
-        .x(function(d) { return x(d.date); })
+        .x(function(d) { return x(d.timestamp); })
         .y0(function(d) { return y(d.y0); })
         .y1(function(d) { return y(d.y0 + d.y); });
 
@@ -299,8 +298,6 @@ myApp.directive('areaChart', function(){
     scope: { data: '=' }
   };
 });
-
-*/
 
 myApp.directive('areChart', function(){
 
