@@ -205,8 +205,8 @@ myApp.directive('areaChart', function(){
 
     //var color = d3.scale.category20();
     var color = d3.scale.ordinal()
-                  .domain(["FC0", "FC2", "FC1"])
-                  .range(["#D9A88F", "#F9D3A5", "#AB9C73"]);
+                  .domain(["FC_0", "FC_2", "FC_1"])
+                  .range(["#993300", "#FFCC00", "#336600"]);
 
     var xAxis = d3.svg.axis()
         .scale(x)
@@ -229,9 +229,6 @@ myApp.directive('areaChart', function(){
             console.log(d.values);
             return d.values; 
         });
-
-
-
 
     scope.$watch('data', function(data){
 
@@ -393,8 +390,6 @@ myApp.directive('arChart', function(){
     //width = 960 - margin.left - margin.right,
     height = (width / 4) - margin.top - margin.bottom;
 
-    console.log(d3.select("#erachart").node().getBoundingClientRect())
-
     var x = d3.time.scale()
         .range([0, width]);
 
@@ -416,9 +411,6 @@ myApp.directive('arChart', function(){
 
 
     scope.$watch('data', function(data){
-
-      console.log("Que estoy recibiendo?")
-      console.log(data)
 
       if(!data){
         return;
