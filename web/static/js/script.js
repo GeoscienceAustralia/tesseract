@@ -18,6 +18,7 @@ myApp.controller('MainCtrl', function($scope, $http){
 
     $scope.datafc = null;
     $scope.datawofs = null;
+    $scope.dataera = null;
 
     $scope.source_change = function() {
         console.log("Change in sources!!!")
@@ -71,14 +72,12 @@ myApp.controller('MainCtrl', function($scope, $http){
                 });
 
                 $scope.datawofs = response;
-                console.log(response)
 
             }).error(function(){
                 alert("Error ");
             });
         }
 
-        /*
         if ($scope.products.indexOf('ERA Interim TP') > -1 ) {
             $http({
                 method: 'GET',
@@ -91,12 +90,12 @@ myApp.controller('MainCtrl', function($scope, $http){
                     d.timestamp = parseDate(d.timestamp);
                 });
 
-                $scope.data = response;
+                $scope.dataera = response;
 
             }).error(function(){
                 alert("Error ");
             });
-        }*/
+        }
 
     };
 
@@ -334,9 +333,6 @@ myApp.directive('areChart', function(){
 
     scope.$watch('data', function(data){
 
-      console.log("Que estoy recibiendo?")
-      console.log(data)
-
       if(!data){
         return;
       }
@@ -373,6 +369,92 @@ myApp.directive('areChart', function(){
           .attr("dy", ".71em")
           .style("text-anchor", "end")
           .text("WOFS");
+
+    }, true);
+
+  }
+  return {
+    link: link,
+    restrict: 'E',
+    scope: { data: '=' }
+  };
+});
+
+
+myApp.directive('arChart', function(){
+
+  function link(scope, el, attr){
+
+    el.append('<div id="erachart" class="col-md-12"></div>');
+
+    var margin = {top: 40, right: 60, bottom: 40, left: 60},
+    width = d3.select("#erachart").node().getBoundingClientRect().width - margin.left - margin.right,
+    //width = 960 - margin.left - margin.right,
+    height = (width / 4) - margin.top - margin.bottom;
+
+    console.log(d3.select("#erachart").node().getBoundingClientRect())
+
+    var x = d3.time.scale()
+        .range([0, width]);
+
+    var y = d3.scale.linear()
+        .range([height, 0]);
+
+    var xAxis = d3.svg.axis()
+        .scale(x)
+        .orient("bottom");
+
+    var yAxis = d3.svg.axis()
+        .scale(y)
+        .orient("left");
+
+    var area = d3.svg.area()
+        .x(function(d) { return x(d.timestamp); })
+        .y0(height)
+        .y1(function(d) { return y(d.TP); });
+
+
+    scope.$watch('data', function(data){
+
+      console.log("Que estoy recibiendo?")
+      console.log(data)
+
+      if(!data){
+        return;
+      }
+
+      // Clean before plotting
+      d3.select("#era_chart").remove();
+
+      var svg = d3.select("#erachart").append("svg")
+                  .attr("id", "era_chart")
+                  .attr("width", width + margin.left + margin.right)
+                  .attr("height", height + margin.top + margin.bottom)
+                  .append("g")
+                  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+      x.domain(d3.extent(data, function(d) { return d.timestamp; }));
+      y.domain([0, d3.max(data, function(d) { return d.TP; })]);
+
+      svg.append("path")
+          .datum(data)
+          .attr("class", "area")
+          .attr("d", area);
+
+      svg.append("g")
+          .attr("class", "x axis")
+          .attr("transform", "translate(0," + height + ")")
+          .call(xAxis);
+
+      svg.append("g")
+          .attr("class", "y axis")
+          .call(yAxis)
+        .append("text")
+          .attr("transform", "rotate(-90)")
+          .attr("y", 6)
+          .attr("dy", ".71em")
+          .style("text-anchor", "end")
+          .text("ERA Interim");
 
     }, true);
 
