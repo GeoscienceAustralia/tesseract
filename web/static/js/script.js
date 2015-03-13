@@ -206,7 +206,7 @@ myApp.directive('areaChart', function(){
     //var color = d3.scale.category20();
     var color = d3.scale.ordinal()
                   .domain(["FC_0", "FC_2", "FC_1"])
-                  .range(["#993300", "#FFCC00", "#336600"]);
+                  .range(["#B8704D", "#FFEB99", "#336600"]);
 
     var xAxis = d3.svg.axis()
         .scale(x)
