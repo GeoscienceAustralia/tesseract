@@ -91,6 +91,7 @@ myApp.controller('MainCtrl', function($scope, $http){
                 });
 
                 $scope.dataera = response;
+                console.log($scope.dataera)
 
             }).error(function(){
                 alert("Error ");
@@ -181,6 +182,7 @@ myApp.directive('clickableMap', function(){
   };
 });
 
+/*
 myApp.directive('areaChart', function(){
 
   function link(scope, el, attr){
@@ -379,7 +381,7 @@ myApp.directive('areChart', function(){
     scope: { data: '=' }
   };
 });
-
+*/
 
 myApp.directive('arChart', function(){
 
