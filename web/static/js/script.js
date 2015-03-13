@@ -182,7 +182,7 @@ myApp.directive('clickableMap', function(){
   };
 });
 
-
+/*
 myApp.directive('areaChart', function(){
 
   function link(scope, el, attr){
@@ -300,7 +300,7 @@ myApp.directive('areaChart', function(){
   };
 });
 
-
+*/
 
 myApp.directive('areChart', function(){
 
@@ -338,8 +338,6 @@ myApp.directive('areChart', function(){
         .y1(function(d) { return y(d.WOFS_0); });
 
 
-
-
     scope.$watch('data', function(data){
 
       if(!data){
@@ -359,8 +357,6 @@ myApp.directive('areChart', function(){
 
       x.domain(d3.extent(data, function(d) { return d.timestamp; }));
       y.domain([0, d3.max(data, function(d) { return d.WOFS_0; })]);
-
-
 
       svg.append("path")
           .datum(data)
