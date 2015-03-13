@@ -315,6 +315,7 @@ myApp.directive('areChart', function(){
     height = (width / 2.618) - margin.top - margin.bottom;
 
     console.log(width + " " + height)
+    console.log("Que cono esta pasando aqui!")
 
     console.log(d3.select("#wofschart").node().getBoundingClientRect())
 
