@@ -51,7 +51,7 @@ myApp.controller('MainCtrl', function($scope, $http){
                     d.timestamp = parseDate(d.timestamp);
                 });
 
-                $scope.data_fc = response;
+                $scope.datafc = response;
 
             }).error(function(){
                 alert("Error ");
@@ -70,7 +70,7 @@ myApp.controller('MainCtrl', function($scope, $http){
                     d.timestamp = parseDate(d.timestamp);
                 });
 
-                $scope.data = response;
+                $scope.datawofs = response;
                 console.log(response)
 
             }).error(function(){
