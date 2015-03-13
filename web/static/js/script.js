@@ -330,7 +330,7 @@ myApp.directive('areChart', function(){
         .orient("left");
 
     var area = d3.svg.area()
-        .x(function(d) { return x(d.date); })
+        .x(function(d) { return x(d.timestamp); })
         .y0(height)
         .y1(function(d) { return y(d.WOFS_0); });
 
