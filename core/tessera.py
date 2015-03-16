@@ -44,6 +44,8 @@ def get_tesserae(sources=None, products=None, t1=None, t2=None, x1=None, x2=None
 
                     with h5py.File(file_name, 'r') as hfile:
 
+                        print("opened!")
+
                         time_dim = hfile[product].dims[0][0].value
                         x_dim = hfile[product].dims[1][0].value
                         y_dim = hfile[product].dims[2][0].value
