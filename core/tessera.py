@@ -66,8 +66,7 @@ def get_tesserae(sources=None, products=None, t1=None, t2=None, x1=None, x2=None
                         #Select bands from input parameters
                         tessera.b_dim = band_dim
 
-                        tessera.array = hfile[product][t1_i:t2_i, y1_i:y2_i, x1_i:x2_i]
-                        #tessera.array = hfile[prod][t1_i:t2_i, x1_i:x2_i, y1_i:y2_i, :]
+                        tessera.array = hfile[product][t1_i:t2_i, x1_i:x2_i, y1_i:y2_i]
 
                     tesserae.append(tessera)
 
