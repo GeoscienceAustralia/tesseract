@@ -46,6 +46,9 @@ def get_tesserae(sources=None, products=None, t1=None, t2=None, x1=None, x2=None
                         x_dim = hfile[product].dims[1][0].value
                         y_dim = hfile[product].dims[2][0].value
 
+                        print x_dim
+                        print y_dim
+
                         if len(hfile[product].shape) == 3:
                             band_dim = np.arange(1)
                         elif len(hfile[product].shape) == 4:
