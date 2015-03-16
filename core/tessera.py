@@ -59,8 +59,9 @@ def get_tesserae(sources=None, products=None, t1=None, t2=None, x1=None, x2=None
                         x2_i = get_index(x2, x_dim)
                         tessera.x_dim = x_dim[x1_i:x2_i]
 
-                        y1_i = get_index(y1, y_dim)
-                        y2_i = get_index(y2, y_dim)
+                        #File names are top-left -> bottom-left
+                        y1_i = 3999 - get_index(y1, y_dim)
+                        y2_i = 3999 - get_index(y2, y_dim)
                         tessera.y_dim = y_dim[y1_i:y2_i]
 
                         #Select bands from input parameters

@@ -22,6 +22,12 @@ def pixel_drill_wofs(sources=None, products=None, t1=None, t2=None, x=None, y=No
 
     df = pd.concat(dfs)
     df.sort_index(inplace=True)
+    df = df[df.WOFS_0 != 2]
+    df = df[df.WOFS_0 != 8]
+    df = df[df.WOFS_0 != 16]
+    df = df[df.WOFS_0 != 32]
+    df = df[df.WOFS_0 != 64]
+
     df["timestamp"] = df.index
 
     return df
