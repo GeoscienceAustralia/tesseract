@@ -39,7 +39,6 @@ def get_tesserae(sources=None, products=None, t1=None, t2=None, x1=None, x2=None
 
                 if os.path.isfile(file_name):
                     tessera = Tessera(source=source, product=product)
-                    print file_name
 
                     with h5py.File(file_name, 'r') as hfile:
 
