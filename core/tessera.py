@@ -37,7 +37,9 @@ def get_tesserae(sources=None, products=None, t1=None, t2=None, x1=None, x2=None
             file_names = index.get_files(product, t1, t2, x1, x2, y1, y2)
             
             for file_name in file_names:
+                print file_name
 
+                """
                 if os.path.isfile(file_name):
                     tessera = Tessera(source=source, product=product)
 
@@ -71,11 +73,9 @@ def get_tesserae(sources=None, products=None, t1=None, t2=None, x1=None, x2=None
                         #tessera.array = hfile[prod][t1_i:t2_i, x1_i:x2_i, y1_i:y2_i, :]
 
                     tesserae.append(tessera)
-
+                """
+                
     return tesserae
-
-
-"""
 
 
 if __name__ == "__main__":
@@ -86,12 +86,6 @@ if __name__ == "__main__":
     time1 = datetime.strptime(t1, '%Y-%m-%dT%H:%M:%S.%fZ')
     time2 = datetime.strptime(t2, '%Y-%m-%dT%H:%M:%S.%fZ')
 
-    df_fc = pixel_drill_fc(sources=["LS5", "LS7"], products=["FC"], t1=time1, t2=time2, x=147.542, y=-30.6234)
-    df_wofs = pixel_drill_fc(sources=["LS5", "LS7"], products=["WOFS"], t1=time1, t2=time2, x=147.542, y=-30.6234)
-    df_tp = pixel_drill_era_tp(sources=["ERA_INTERIM"], products=["TP"], t1=time1, t2=time2, x=147.542, y=-30.6234)
+    get_tesserae(sources=["LS5", "LS7"], products=["FC"], t1=time1, t2=time2, x1=147.542, x2=147.542+.00025,
+                 y1=-30.6234, y2=-30.6234+.00025)
 
-    df = df_fc.combine_first(df_tp)
-    df.TP.interpolate(inplace=True)
-    df = df[np.isfinite(df['FC_0'])] 
-    print df.head(10)
-"""
