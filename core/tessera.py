@@ -39,7 +39,6 @@ def get_tesserae(sources=None, products=None, t1=None, t2=None, x1=None, x2=None
             for file_name in file_names:
                 print file_name
 
-                """
                 if os.path.isfile(file_name):
                     tessera = Tessera(source=source, product=product)
 
@@ -61,10 +60,14 @@ def get_tesserae(sources=None, products=None, t1=None, t2=None, x1=None, x2=None
                         x1_i = get_index(x1, x_dim)
                         x2_i = get_index(x2, x_dim)
                         tessera.x_dim = x_dim[x1_i:x2_i]
+                        print x1_i
+                        print x2_i
 
                         y1_i = get_index(y1, y_dim)
                         y2_i = get_index(y2, y_dim)
                         tessera.y_dim = y_dim[y1_i:y2_i]
+                        print y1_i
+                        print y2_i
 
                         #Select bands from input parameters
                         tessera.b_dim = band_dim
@@ -73,8 +76,7 @@ def get_tesserae(sources=None, products=None, t1=None, t2=None, x1=None, x2=None
                         #tessera.array = hfile[prod][t1_i:t2_i, x1_i:x2_i, y1_i:y2_i, :]
 
                     tesserae.append(tessera)
-                """
-                
+
     return tesserae
 
 
