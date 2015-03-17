@@ -34,13 +34,13 @@ def get_tesserae(sources=None, products=None, t1=None, t2=None, x1=None, x2=None
         for product in products:
 
             file_names = index.get_files(product, t1, t2, x1, x2, y1, y2)
-            
+
             for file_name in file_names:
+
+                print file_name
 
                 if os.path.isfile(file_name):
                     tessera = Tessera(source=source, product=product)
-
-                    print file_name
 
                     with h5py.File(file_name, 'r') as hfile:
 
