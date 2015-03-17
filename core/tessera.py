@@ -37,14 +37,10 @@ def get_tesserae(sources=None, products=None, t1=None, t2=None, x1=None, x2=None
 
             for file_name in file_names:
 
-                print file_name
-
                 if os.path.isfile(file_name):
                     tessera = Tessera(source=source, product=product)
 
                     with h5py.File(file_name, 'r') as hfile:
-
-                        print("opened!")
 
                         time_dim = hfile[product].dims[0][0].value
                         x_dim = hfile[product].dims[1][0].value
