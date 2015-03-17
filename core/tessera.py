@@ -88,6 +88,6 @@ if __name__ == "__main__":
     time1 = datetime.strptime(t1, '%Y-%m-%dT%H:%M:%S.%fZ')
     time2 = datetime.strptime(t2, '%Y-%m-%dT%H:%M:%S.%fZ')
 
-    get_tesserae(sources=["LS5", "LS7"], products=["NBAR"], t1=time1, t2=time2, x1=147.542, x2=147.542+.00025,
-                 y1=-30.6234, y2=-30.6234+.00025)
+    get_tesserae(sources=["LS5", "LS7"], products=["NBAR"], t1=time1, t2=time2, x1=151.230618, x2=151.230618+.00025,
+                 y1=-28.426943, y2=-28.426943+.00025)
 
