@@ -1,7 +1,7 @@
 from datetime import datetime
 import numpy as np
 from collections import OrderedDict, namedtuple
-from tile import Tile
+from tile import Tile, load_partial_tile
 from math import floor
 from utils import get_geo_dim
 # import only for test plotting
@@ -18,8 +18,7 @@ def load_data(prod, min_lat, max_lat, min_lon, max_lon, time_start, time_end, la
     conn = Connection('128.199.74.80', 27017)
     db = conn["datacube"]
 
-    
-    cursor = db.index2.find({"product": prod, "lat_start": {"$gte": int(floor(min_lat)), "$lte": int(floor(max_lat))},
+    cursor = db.index.find({"product": prod, "lat_start": {"$gte": int(floor(min_lat)), "$lte": int(floor(max_lat))},
                              "lon_start": {"$gte": int(floor(min_lon)), "$lte": int(floor(max_lon))},
                              "time": {"$gte": time_start, "$lt": time_end}})
     tiles = {}
@@ -31,11 +30,48 @@ def load_data(prod, min_lat, max_lat, min_lon, max_lon, time_start, time_end, la
 
         if lat_extent > 0 and lon_extent > 0:
             tiles[TileID(item[u'product'], lat_start, lat_extent, lon_start, lon_extent, item[u'pixel_size'], np.datetime64(item[u'time']))] = \
-                Tile.load_partial_tile(item, lat_start, lon_start, lat_extent, lon_extent, lazy=lazy)
+                load_partial_tile(item, lat_start, lon_start, lat_extent, lon_extent, lazy=lazy)
             """
             Tile(sat="LS5_TM", prod=item[u'product'], lat_id=item[u'lat_start'], lon_id=item[u'lon_start'], time=item[u'time'], pixel_size=item[u'pixel_size'], bands=6,
             lat_start=lat_start, lon_start=lon_start, lat_extent=lat_extent, lon_extent=lon_extent, array=None, lazy=lazy)
             """
+    return DataCube(tiles)
+
+def get_snapshot(prod, min_lat, max_lat, min_lon, max_lon, time):
+
+    dc = _load_data_time(prod, min_lat, max_lat, min_lon, max_lon, time, lazy=False)
+
+    for key, value in dc._tiles.iteritems():
+        print value._array.shape
+        break
+
+
+
+def _load_data_time(prod, min_lat, max_lat, min_lon, max_lon, time, lazy=True):
+    lats = np.arange(floor(min_lat), floor(max_lat)+1)  
+    lons = np.arange(floor(min_lon), floor(max_lon)+1)  
+
+    conn = Connection('128.199.74.80', 27017)
+    db = conn["datacube"]
+
+    tiles = {}
+    for lat in lats:
+        for lon in lons:
+
+            cursor = db.index.find({"product": prod, "lat_start": lat, "lon_start": lon}).sort("time", -1).limit(1)
+            
+            if cursor.count(with_limit_and_skip = True) == 1:
+                item = cursor[0] 
+                lat_start = max(item[u'lat_start'], min_lat)
+                lon_start = max(item[u'lon_start'], min_lon)
+                lat_extent = min(abs(item[u'lat_start']+item[u'lat_extent']-lat_start), abs(max_lat-lat_start))
+                lon_extent = min(abs(item[u'lon_start']+item[u'lon_extent']-lon_start), abs(max_lon-lon_start))
+
+                if lat_extent > 0 and lon_extent > 0:
+                    tiles[TileID(item[u'product'], lat_start, lat_extent, lon_start, lon_extent, item[u'pixel_size'], np.datetime64(item[u'time']))] = \
+                      load_partial_tile(item, lat_start, lon_start, lat_extent, lon_extent, lazy=lazy)
+                    print lat, lon, item[u'time']
+    
     return DataCube(tiles)
 
 
@@ -189,10 +225,9 @@ if __name__ == "__main__":
     #print dc["", 2, 4, 4]
     #print dc.dims["product"]
     #print dc.dims["time"]
-    """
     time1 = datetime.strptime("2007-08-01T00:00:00.000Z", '%Y-%m-%dT%H:%M:%S.%fZ')
     time2 = datetime.strptime("2007-09-01T00:00:00.000Z", '%Y-%m-%dT%H:%M:%S.%fZ')
-    dc = load_data("NBAR", -35.0, -33.0, 124.0, 127.0, time1, time2)
+    dc = load_data("NBAR", -35.0, -33.0, 124.0, 127.0, time1, time2, lazy=False)
     print dc.shape
     dc = dc["", -34.5:-33.5, 125.5:126.5, 4]
     print len(dc._tiles)
@@ -208,5 +243,9 @@ if __name__ == "__main__":
 
     print dc.shape
 
+    """
+    time1 = datetime.strptime("2007-08-01T00:00:00.000Z", '%Y-%m-%dT%H:%M:%S.%fZ')
+    get_snapshot("NBAR", -35.0, -33.0, 124.0, 127.0, time1)
+    #dc = load_data_time("NBAR", -35.0, -33.0, 124.0, 127.0, time1, lazy=False)
 
-    dc2.plot_datacube()
+    #dc2.plot_datacube()

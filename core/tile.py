@@ -8,7 +8,7 @@ import h5py
 # CONSTANTS
 DATA_PATH = "/g/data1/v10/HPCData/"
 
-def load_full_tile(tile_dict, lazy=True):
+def load_full_tile(item, lazy=True):
     # TODO Hardcoded values
     return Tile(sat="LS5_TM", prod=item[u'product'], lat_id="{0:04d}".format(int(item[u'lat_start'])),
                 lon_id="{0:03d}".format(int(item[u'lon_start'])), time=item[u'time'], pixel_size=item[u'pixel_size'],
@@ -16,7 +16,7 @@ def load_full_tile(tile_dict, lazy=True):
                 lon_extent=item[u'lon_extent'], array=None, lazy=lazy)
 
 
-def load_partial_tile(tile_dict, lat_start, lon_start, lat_extent, lon_extent, lazy=True):
+def load_partial_tile(item, lat_start, lon_start, lat_extent, lon_extent, lazy=True):
     # TODO Hardcoded values
     return Tile(sat="LS5_TM", prod=item[u'product'], lat_id="{0:04d}".format(int(item[u'lat_start'])),
                 lon_id="{0:03d}".format(int(item[u'lon_start'])), time=item[u'time'], pixel_size=item[u'pixel_size'],
@@ -47,7 +47,7 @@ class Tile(object):
             print DATA_PATH + "{}_{}_{}_{}.nc".format(self._sat, self._lon_id, self._lat_id, self._time.year)
             with h5py.File(DATA_PATH + "{}_{}_{}_{}.nc".format(self._sat, self._lon_id, self._lat_id, self._time.year), 'r') as dfile:
                 print self.timestamp
-                print dfile[self._prod].keys()[5]
+                print dfile[self._prod][self.timestamp].shape
 
     def __getitem__(self, index):
         # TODO: Properly implement band dimension

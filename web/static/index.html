@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<style>
+
+
+body {
+    padding-top: 70px;
+    font: 10px sans-serif;
+}
+
+    hr {
+    display: block;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+    margin-left: auto;
+    margin-right: auto;
+    border-style: inset;
+    border-width: 1px;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.browser text {
+  text-anchor: end;
+}
+
+.area {
+  fill: steelblue;
+}
+
+</style>
+<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="http://openlayers.org/en/v3.2.1/css/ol.css" type="text/css">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.10/angular.min.js"></script>
+    <script src="http://openlayers.org/en/v3.2.1/build/ol.js" type="text/javascript"></script>
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+</head>
+<body ng-app="myApp" ng-controller="MainCtrl" role="document">
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">GA Datacube Testbed</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#contact">Contact</a></li>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Dropdown <span class="caret"></span></a>
+              <ul class="dropdown-menu" role="menu">
+                <li><a href="#">Action</a></li>
+                <li><a href="#">Another action</a></li>
+                <li><a href="#">Something else here</a></li>
+                <li class="divider"></li>
+                <li class="dropdown-header">Nav header</li>
+                <li><a href="#">Separated link</a></li>
+                <li><a href="#">One more separated link</a></li>
+              </ul>
+            </li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container theme-showcase" role="main">
+
+
+        <div class="page-header">
+            <h2>Fractional Cover Drill</h2>
+        </div>
+        <div class="well">
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas sed diam eget risus varius blandit sit amet non magna. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent commodo cursus magna, vel scelerisque nisl consectetur et. Cras mattis consectetur purus sit amet fermentum. Duis mollis, est non commodo luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit. Aenean lacinia bibendum nulla sed consectetur.</p>
+        </div>
+
+        <h3>Select Variables:</h3>
+        <hr>
+
+        <div class="col-md-3">
+            <form role="form">
+                <div class="form-group">
+                    <div class="row">
+                        <label for="sources">Sources:</label>
+                    </div>
+                    <div id="sources" class="row">
+                        <label class="checkbox-inline">
+                          <input type="checkbox" id="ls5" ng-model="ls5" ng-change="source_change()"> LS5
+                        </label>
+                        <label class="checkbox-inline">
+                          <input type="checkbox" id="ls7" ng-model="ls7" ng-change="source_change()"> LS7
+                        </label>
+                        <label class="checkbox-inline">
+                          <input type="checkbox" id="era" ng-model="era" ng-change="source_change()"> ERA
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="row">
+                        <label for="products">Product:</label>
+                    </div>
+                    <ul id="products" >
+                        <li ng-repeat="prod in products">
+                          {{prod}}
+                        </li>
+                    </ul>
+
+                </div>
+
+                <div class="form-group">
+                     <div class="row">
+                        <label for="start_date" class="control-label">Start Date:</label>
+                     </div>
+                    <input id="start_date" type="date" ng-model="start_date">
+                </div>
+                <div class="form-group">
+                     <div class="row">
+                        <label for="end_date" class="control-label">End Date:</label>
+                     </div>
+                    <input id="end_date" type="date" ng-model="end_date">
+                </div>
+                <div class="form-group">
+                     <div class="row">
+                        <label for="coords" class="control-label">Longitude/Latitude:</label>
+                     </div>
+                    <input id="coords" type="value" ng-model="coords[0]">
+                    <input type="value" ng-model="coords[1]">
+                </div>
+
+              <button type="submit" class="btn btn-default">Submit</button>
+            </form>
+
+
+        </div>
+
+        <clickable-map ng-click></clickable-map>
+
+        <hr>
+
+        <h3>Time Series Stacked Chart:</h3>
+        <hr>
+
+        <are-chart data="datawofs"></are-chart>
+
+        <ar-chart data="dataera"></ar-chart>
+
+        <area-chart data="datafc"></area-chart>
+
+
+    </div>
+    <script src="js/script.js"></script>
+</body>
+</html>
