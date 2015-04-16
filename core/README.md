@@ -1,3 +1,11 @@
+GeoTIFF to HDF5 Conversion
+==========================
+
+This iPython notebook contains and briefly explains the process used to convert raster files from GeoTIFFs into iaggregated multidimensional HDF5 files:
+
+[Notebook](http://nbviewer.ipython.org/github/monkeybutter/tesseract/blob/master/core/1_geotiff_to_hdf5.ipynb)
+
+
 Basic Low Level API
 ===================
 
