@@ -16,3 +16,7 @@ The **core** folder in this project contains code and documentation about the pr
 </p>
 The **web** folder contains the implementation of the RESTFul API exposing pixel drill functionalities for different products and the web server to host the actual application.
 
+<p>
+<h3>Context</h3>
+</p>
+For a more in depth explanation about the reasons motivating and scope of this project please visit: [CRC-SI Low Level API](https://docs.google.com/document/d/1ONq9WEP3qn34L3_yGPnDOn-2HjwVLtfXicgbs6Umdps/edit?usp=sharing) 
