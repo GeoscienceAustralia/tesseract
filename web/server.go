@@ -69,5 +69,5 @@ func main() {
 
 	http.Handle("/", r)
 
-	panic(http.ListenAndServe("127.0.0.1:8081", nil))
+	panic(http.ListenAndServe("0.0.0.0:8080", nil))
 }
