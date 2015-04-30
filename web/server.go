@@ -18,6 +18,9 @@ func drill_fc(w http.ResponseWriter, r *http.Request) {
 
 	out, err := exec.Command("python", "../core/pixel_drill_fc.py", start_date, end_date, lon, lat).Output()
 	if err != nil {
+                fmt.Println("Error FC")
+                fmt.Println(err)
+                fmt.Println(out)
 		log.Fatal(err)
 	}
 
@@ -35,6 +38,9 @@ func drill_wofs(w http.ResponseWriter, r *http.Request) {
         
 	out, err := exec.Command("python", "../core/pixel_drill_wofs.py", start_date, end_date, lon, lat).Output()
 	if err != nil {
+                fmt.Println("Error WOFS")
+                fmt.Println(err)
+                fmt.Println(out)
 		log.Fatal(err)
 	}
 
@@ -52,6 +58,8 @@ func drill_era_interim(w http.ResponseWriter, r *http.Request) {
 
 	out, err := exec.Command("python", "../core/pixel_drill_era_interim.py", start_date, end_date, lon, lat).Output()
 	if err != nil {
+                fmt.Println("Error ERA")
+                fmt.Println(err)
 		log.Fatal(err)
 	}
 
@@ -69,5 +77,5 @@ func main() {
 
 	http.Handle("/", r)
 
-	panic(http.ListenAndServe("127.0.0.1:8081", nil))
+	panic(http.ListenAndServe("0.0.0.0:8080", nil))
 }
