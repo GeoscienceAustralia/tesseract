@@ -7,7 +7,7 @@ import math
 class LS7Index(Index):
 
     source = 'LS7'
-    abs_path = "/g/data/rs0/tiles/EPSG4326_1deg_0.00025pixel_netcdf/HPCData/LS7/"
+    abs_path = "/g/data/v27/LS7/"
     
     __class_description__ = """Class for extracting crop biomass of a plot"""
     __version__ = 0.1
