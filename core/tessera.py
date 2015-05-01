@@ -60,8 +60,8 @@ def get_tesserae(sources=None, products=None, t1=None, t2=None, x1=None, x2=None
                         tessera.x_dim = x_dim[x1_i:x2_i]
 
                         #TODO File names are top-left -> bottom-left
-                        y1_i = 3999 - get_index(y1, y_dim)
-                        y2_i = 3999 - get_index(y2, y_dim)
+                        y1_i = y_dim.shape[0] - get_index(y1, y_dim)
+                        y2_i = y_dim.shape[0] - get_index(y2, y_dim)
                         #TODO Change order of vars
                         tessera.y_dim = y_dim[y2_i:y1_i]
 
