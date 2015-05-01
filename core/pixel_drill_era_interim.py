@@ -12,8 +12,9 @@ def pixel_drill_era_tp(sources=None, products=None, t1=None, t2=None, x=None, y=
     v_epoch2datetime = np.vectorize(lambda x: datetime.fromtimestamp(x))
 
     cubes = get_tesserae(sources=sources, products=products, t1=t1, t2=t2, x1=x, x2=x+.125, y1=y, y2=y+.125)
-
+ 
     index = v_epoch2datetime(cubes[0].t_dim)
+
     df = pd.DataFrame(np.squeeze(cubes[0].array), index=index, columns=["TP"])
 
     df.sort_index(inplace=True)
