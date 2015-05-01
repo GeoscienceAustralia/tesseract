@@ -58,7 +58,7 @@ myApp.controller('MainCtrl', function($scope, $http){
                 alert("Error ");
             });
         }
-
+ 
         if ($scope.products.indexOf('WOFS') > -1 ) {
             $http({
                 method: 'GET',
@@ -154,7 +154,8 @@ myApp.directive('clickableMap', function(){
             source: new ol.source.MapQuest({layer: 'sat'})
         }),
         new ol.layer.Vector({
-            source: vectorSource
+            source: vectorSource,
+            color: [255, 255, 0, 0.5]
         })
       ],
       //renderer: exampleNS.getRendererFromQueryString(),
@@ -206,7 +207,7 @@ myApp.directive('areaChart', function(){
     //var color = d3.scale.category20();
     var color = d3.scale.ordinal()
                   .domain(["FC_0", "FC_2", "FC_1"])
-                  .range(["#B8704D", "#FFEB99", "#336600"]);
+                  .range(["#336600", "#FFEB99", "#B8704D"]);
 
     var xAxis = d3.svg.axis()
         .scale(x)
