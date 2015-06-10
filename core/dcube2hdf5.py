@@ -10,23 +10,7 @@ from datacube.api.query import list_tiles_as_list
 from datacube.api.utils import get_dataset_metadata
 from datacube.api.utils import get_dataset_data
 from datacube.config import Config
-
-
-def create_tiles(array_size, tile_size=100):
-    """
-    A minor function to tile a 1D array or list into smaller manageable
-    portions.
-    """
-    idx_start = range(0, array_size, tile_size)
-    idx_tiles = []
-    for idx_st in idx_start:
-        if idx_st + tile_size < array_size:
-            idx_end = idx_st + tile_size
-        else:
-            idx_end = array_size
-        idx_tiles.append((idx_st, idx_end))
-
-    return idx_tiles
+from eotools.tiling import generate_tiles
 
 
 def write_datasets_to_hdf5(tiles, outfname, bsq=True):
@@ -108,21 +92,22 @@ def write_datasets_to_hdf5(tiles, outfname, bsq=True):
                     data = get_dataset_data(ds.datasets[dstype], [band])
                     dsets[band][idx] = data[band]
     else:
-        chunks = create_tiles(lines)
+        chunks = generate_tiles(samples, lines, samples, 100, generator=False)
         ds_init = tiles[0]
         for dstype in ds_init.datasets:
             md = get_dataset_metadata(ds_init.datasets[dstype])
             for band in ds.datasets[dstype].bands:
                 dtype = gdal_2_numpy_dtypes[md.bands[band].data_type]
                 for chunk in chunks:
-                    ysize = chunk[1] - chunk[0]
+                    ychunk = chunk[0]
+                    ysize = ychunk[1] - ychunk[0]
                     data = numpy.zeros((len(tiles), ysize, samples),
                                        dtype=dtype)
                     for idx, ds in enumerate(tiles):
                         data[idx, :, :] = get_dataset_data(ds.datasets[dstype],
-                                                           [band], y=chunk[0],
+                                                           [band], y=ychunk[0],
                                                            y_size=ysize)[band]
-                    dsets[band][:, chunk[0]:chunk[1], :] = data
+                    dsets[band][:, ychunk[0]:ychunk[1], :] = data
 
     outf.flush()
     outf.close()
