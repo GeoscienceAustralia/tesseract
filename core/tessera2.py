@@ -25,8 +25,8 @@ class TesseraDatasets(object):
         self.fname = filename
         self.container = h5py.File(filename, 'r')
 
-        self.metadata = self.container['metadata']['Timestamp']
-        tmp_ = self.metadata[:].astype('datetime64[ps]')
+        self.metadata = self.container['metadata']['timestamps']
+        tmp_ = self.metadata[:].astype('datetime64[ns]')
         self.time_slices = tmp_.shape[0]
         self.timestamps = pandas.DataFrame({'idx': range(self.time_slices)},
                                            index=tmp_)
@@ -38,8 +38,3 @@ class TesseraDatasets(object):
         tmp_ = self.container['data']
         for key in self.container['data'].keys():
             self.dsets[key] = tmp_[key]
-
-    # def get_dataset_data(self, dataset, index):
-    #    if dataset not in self.dsets.keys():
-    #         msg = "{} not in available datasets.".format(dataset)
-    #         raise IndexError(msg)
