@@ -28,6 +28,7 @@ def write_datasets_to_hdf5(tiles, outfname, bsq=True):
     df = pandas.DataFrame({'Timestamp': timestamps}, index=timestamps)
 
     # Get the first dataset tile and retrieve basic info about the image
+    ds_type = DatasetType.ARG25
     ds = tiles[0]
     dataset = ds.datasets[ds_type]
     md = get_dataset_metadata(dataset)
