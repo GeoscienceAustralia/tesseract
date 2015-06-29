@@ -13,7 +13,7 @@ from datacube.config import Config
 from eotools.tiling import generate_tiles
 
 
-def write_datasets_to_hdf5(tiles, outfname, bsq=True):
+def write_datasets_to_hdf5(tiles, outfname, bsq=True, compression='gzip'):
     """
     Outputs the list of tiles returned from a datacube query, to a hdf5
     file container. It is assumed that the tiles are from a single cell.
@@ -65,7 +65,7 @@ def write_datasets_to_hdf5(tiles, outfname, bsq=True):
             dtype = gdal_2_numpy_dtypes[md.bands[band].data_type]
             out_ds_name = '/data/{}'.format(band.name)
             dsets[band] = outf.create_dataset(out_ds_name, dims, dtype=dtype,
-                                              compression='gzip',
+                                              compression=compression,
                                               chunks=chunks, maxshape=max_dims)
             dsets[band].attrs['axes'] = ['time', 'y', 'x']
             dsets[band].attrs['projection'] = md.projection
@@ -123,19 +123,22 @@ if __name__ == '__main__':
                         help='The output filename.')
     parser.add_argument('--bil', action="store_false",
                         help='Simulate a bil interleaved file.')
+    parser.add_argument('--compression', default='gzip',
+                        help='The compression format to use. Default is gzip.')
 
     parsed_args = parser.parse_args()
 
     outfname = parsed_args.outfname
     bsq = parsed_args.bil
+    compression = parsed_args.compression
 
     config = Config()
-    satellites = [Satellite(i) for i in ['LS5', 'LS7', 'LS8']]
-    min_date = date(2008, 01, 01)
-    max_date = date(2009, 12, 31)
+    satellites = [Satellite(i) for i in ['LS5', 'LS7']]
+    min_date = date(1987, 01, 01)
+    max_date = date(2015, 12, 31)
     ds_type = DatasetType.ARG25
 
-    x_cell = [145]
+    x_cell = [146]
     y_cell = [-34]
 
     tiles = list_tiles_as_list(x=x_cell, y=y_cell, acq_min=min_date,
@@ -148,4 +151,4 @@ if __name__ == '__main__':
                                host=config.get_db_host(),
                                port=config.get_db_port())
 
-    write_datasets_to_hdf5(tiles, outfname, bsq)
+    write_datasets_to_hdf5(tiles, outfname, bsq, compression)
