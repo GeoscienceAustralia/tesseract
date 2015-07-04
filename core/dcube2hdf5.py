@@ -3,8 +3,9 @@
 import argparse
 from datetime import date
 import h5py
-import pandas
 import numpy
+import pandas
+
 from datacube.api.model import DatasetType, Satellite
 from datacube.api.query import list_tiles_as_list
 from datacube.api.utils import get_dataset_metadata
