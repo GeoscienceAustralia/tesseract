@@ -13,7 +13,6 @@ from datacube.api.model import DatasetType, Satellite
 from datacube.api.query import list_tiles_as_list
 from datacube.api.utils import get_dataset_metadata
 from datacube.api.utils import get_dataset_data
-from datacube.config import Config
 from eotools.tiling import generate_tiles
 
 
@@ -39,8 +38,7 @@ DS_TYPES_MAP = {'arg25': DatasetType.ARG25,
 
 
 def convert_datasets_to_hdf5(tiles, outfname, chunks=(32, 128, 128),
-                             chunk_multiples=1, compression='lzf')
-
+                             chunk_multiples=1, compression='lzf'):
     """
     Converts the list of `tiles` containing the datasets from a
     single cell returned from a query to the agdc.
@@ -97,7 +95,7 @@ def convert_datasets_to_hdf5(tiles, outfname, chunks=(32, 128, 128),
     # Get the spatial and z-axis chunks we need to read/write
     chunk_x = chunks[2] * chunk_multiples
     chunk_y = chunks[1] * chunk_multiples
-    chunks = generate_tiles(samples, lines, chunks[2], chunks[1],
+    chunks = generate_tiles(samples, lines, chunk_x, chunk_y,
                             generator=False)
     tchunks = generate_tiles(ts_dims, 100, chunks[0], 100, generator=False)
     tchunks = [x for y, x in tchunks]
@@ -145,16 +143,16 @@ if __name__ == '__main__':
 
     # Retrieve the configuraiton option
 
-    # Get the satellites we wish to query                                       
-    satellites = cfg.get('db_query', 'satellites')                               
-    satellites = [Satellite(i) for i in satellites.split(',')]                  
-                                                                                
-    # Get the min/max date range to query                                       
-    min_date = cfg.get('db_query', 'min_date')                                   
-    min_date = [int(i) for i in min_date.split('_')]                            
-    min_date = date(min_date[0], min_date[1], min_date[2])                      
-    max_date = cfg.get('db_query', 'max_date')                                   
-    max_date = [int(i) for i in max_date.split('_')]                            
+    # Get the satellites we wish to query
+    satellites = cfg.get('db_query', 'satellites')
+    satellites = [Satellite(i) for i in satellites.split(',')]
+
+    # Get the min/max date range to query
+    min_date = cfg.get('db_query', 'min_date')
+    min_date = [int(i) for i in min_date.split('_')]
+    min_date = date(min_date[0], min_date[1], min_date[2])
+    max_date = cfg.get('db_query', 'max_date')
+    max_date = [int(i) for i in max_date.split('_')]
     max_date = date(max_date[0], max_date[1], max_date[2])
 
     # Get the cell
