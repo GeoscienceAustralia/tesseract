@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 
 import argparse
+import ConfigParser
+import cPickle as pickle
+from datetime import date
+
 import h5py
 import numpy
 import pandas
@@ -27,8 +31,15 @@ GDAL_2_NUMPY_DTYPES = {1: 'uint8',
                        11: 'complex128'}
 
 
+# Define a DatasetType mapping
+DS_TYPES_MAP = {'arg25': DatasetType.ARG25,
+                'fc25': DatasetType.FC25,
+                'pq25': DatasetType.PQ25,
+                'water': DatasetType.WATER}
+
+
 def convert_datasets_to_hdf5(tiles, outfname, chunks=(32, 128, 128),
-                             compression='lzf')
+                             chunk_multiples=1, compression='lzf')
 
     """
     Converts the list of `tiles` containing the datasets from a
@@ -84,6 +95,8 @@ def convert_datasets_to_hdf5(tiles, outfname, chunks=(32, 128, 128),
     outf.flush()
 
     # Get the spatial and z-axis chunks we need to read/write
+    chunk_x = chunks[2] * chunk_multiples
+    chunk_y = chunks[1] * chunk_multiples
     chunks = generate_tiles(samples, lines, chunks[2], chunks[1],
                             generator=False)
     tchunks = generate_tiles(ts_dims, 100, chunks[0], 100, generator=False)
@@ -114,3 +127,66 @@ def convert_datasets_to_hdf5(tiles, outfname, chunks=(32, 128, 128),
 
     outf.flush()
     outf.close()
+
+if __name__ == '__main__':
+
+    desc = 'Converts a sample datacube query into a hdf5 file.'
+    parser = argparse.ArgumentParser(description=desc)
+
+    parser.add_argument('--cfg_file', help='The input configuration file.')
+
+    parsed_args = parser.parse_args()
+
+    cfg_fname = parsed_args.cfg_file
+
+    cfg = ConfigParser.RawConfigParser()
+    cfg.read(cfg_fname)
+
+
+    # Retrieve the configuraiton option
+
+    # Get the satellites we wish to query                                       
+    satellites = cfg.get('db_query', 'satellites')                               
+    satellites = [Satellite(i) for i in satellites.split(',')]                  
+                                                                                
+    # Get the min/max date range to query                                       
+    min_date = cfg.get('db_query', 'min_date')                                   
+    min_date = [int(i) for i in min_date.split('_')]                            
+    min_date = date(min_date[0], min_date[1], min_date[2])                      
+    max_date = cfg.get('db_query', 'max_date')                                   
+    max_date = [int(i) for i in max_date.split('_')]                            
+    max_date = date(max_date[0], max_date[1], max_date[2])
+
+    # Get the cell
+    cell_x = int(cfg.get('db_query', 'cell_x'))
+    cell_y = int(cfg.get('db_query', 'cell_y'))
+
+    # Get the DatasetTypes
+    ds_types = cfg.get('db_query', 'dataset_types')
+    ds_types = [i.lower() for i in ds_types.split(',')]
+    ds_types = [DS_TYPES_MAP[i] for i in ds_types]
+
+    # File and processing options
+    chunksize = cfg.get('file_options', 'chunksize')
+    chunksize = tuple([int(i) for i in chunksize.split(',')])
+    compression = cfg.get('file_options', 'compression')
+    chunk_multiples = int(cfg.get('processing_options', 'chunk_multiples'))
+
+    # Output options
+    out_fname = cfg.get('output', 'hdf5_filename')
+    query_fname = cfg.get('output', 'query_filename')
+
+
+    # Query the DB, save the result to disk
+    tiles = list_tiles_as_list(x=[cell_x], y=[cell_y], acq_min=min_date,
+                               acq_max=max_date, dataset_types=ds_types,
+                               satellites=satellites)
+
+    with open(query_fname, 'w') as outf:
+        pickle.dump(tiles, outf)
+
+
+    # Convert
+    convert_datasets_to_hdf5(tiles, out_fname, chunks=chunksize,
+                             chunk_multiples=chunk_multiples,
+                             compression=compression)
