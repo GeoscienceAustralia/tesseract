@@ -33,12 +33,13 @@ GDAL_2_NUMPY_DTYPES = {1: 'uint8',
 # Define a DatasetType mapping
 DS_TYPES_MAP = {'arg25': DatasetType.ARG25,
                 'fc25': DatasetType.FC25,
-                'pq25': DatasetType.PQ25,
-                'water': DatasetType.WATER}
+                'pq25': DatasetType.PQ25}
+#                'water': DatasetType.WATER}
 
 
-def convert_datasets_to_hdf5(tiles, outfname, chunks=(32, 128, 128),
-                             chunk_multiples=1, compression='lzf'):
+def convert_datasets_to_hdf5(tiles, outfname, chunksize=(32, 128, 128),
+                             chunk_multiples=1, compression='lzf',
+                             dataset_types=None):
     """
     Converts the list of `tiles` containing the datasets from a
     single cell returned from a query to the agdc.
@@ -72,7 +73,8 @@ def convert_datasets_to_hdf5(tiles, outfname, chunks=(32, 128, 128),
             out_ds_name = '/data/{}'.format(band.name)
             dsets[band] = outf.create_dataset(out_ds_name, dims, dtype=dtype,
                                               compression=compression,
-                                              chunks=chunks, maxshape=max_dims)
+                                              chunks=chunksize,
+                                              maxshape=max_dims)
             dsets[band].attrs['axes'] = ['time', 'y', 'x']
             dsets[band].attrs['projection'] = md.projection
             dsets[band].attrs['geotransform'] = md.transform
@@ -93,16 +95,18 @@ def convert_datasets_to_hdf5(tiles, outfname, chunks=(32, 128, 128),
     outf.flush()
 
     # Get the spatial and z-axis chunks we need to read/write
-    chunk_x = chunks[2] * chunk_multiples
-    chunk_y = chunks[1] * chunk_multiples
+    chunk_x = chunksize[2] * chunk_multiples
+    chunk_y = chunksize[1] * chunk_multiples
     chunks = generate_tiles(samples, lines, chunk_x, chunk_y,
                             generator=False)
-    tchunks = generate_tiles(ts_dims, 100, chunks[0], 100, generator=False)
+    tchunks = generate_tiles(ts_dims[0], 100, chunksize[0], 100,
+                             generator=False)
     tchunks = [x for y, x in tchunks]
 
     # Write out the data
     ds_init = tiles[0]
-    for dstype in ds_init.datasets:
+    #for dstype in ds_init.datasets:
+    for dstype in dataset_types:
         md = get_dataset_metadata(ds_init.datasets[dstype])
         for band in ds.datasets[dstype].bands:
             dtype = GDAL_2_NUMPY_DTYPES[md.bands[band].data_type]
@@ -137,7 +141,7 @@ if __name__ == '__main__':
 
     cfg_fname = parsed_args.cfg_file
 
-    cfg = ConfigParser.RawConfigParser()
+    cfg = ConfigParser.SafeConfigParser()
     cfg.read(cfg_fname)
 
 
@@ -185,6 +189,7 @@ if __name__ == '__main__':
 
 
     # Convert
-    convert_datasets_to_hdf5(tiles, out_fname, chunks=chunksize,
+    convert_datasets_to_hdf5(tiles, out_fname, chunksize=chunksize,
                              chunk_multiples=chunk_multiples,
-                             compression=compression)
+                             compression=compression,
+                             dataset_types=ds_types)
