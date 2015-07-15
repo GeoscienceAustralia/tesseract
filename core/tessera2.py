@@ -32,12 +32,10 @@ class TesseraDatasets(object):
         self.timestamps = pandas.DataFrame({'idx': range(self.time_slices)},
                                            index=tmp_)
 
-        # Setup the CRS/SRS/Projection (for now just keep GDAL like
-        # 'projection' call. More recent libs use crs
-        self.projection = self.metadata.attrs['projection']
-        self.crs_wkt = self.metadata.attrs['projection']
+        # Setup the CRS and present two forms for users, wkt and Proj4
+        self.crs_wkt = self.metadata.attrs['crs_wkt']
         crs = osr.SpatialReference()
-        crs.ImportFromWkt(self.metadata.attrs['projection'])
+        crs.ImportFromWkt(self.metadata.attrs['crs_wkt'])
         self.crs = crs.ExportToProj4()
         
         # Setup the image tie point (just mimic the GDAL named 'geotransform'

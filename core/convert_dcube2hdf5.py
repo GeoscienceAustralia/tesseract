@@ -76,7 +76,7 @@ def convert_datasets_to_hdf5(tiles, outfname, chunksize=(32, 128, 128),
                                               chunks=chunksize,
                                               maxshape=max_dims)
             dsets[band].attrs['axes'] = ['time', 'y', 'x']
-            dsets[band].attrs['projection'] = md.projection
+            dsets[band].attrs['crs_wkt'] = md.projection
             dsets[band].attrs['geotransform'] = md.transform
 
     # TODO add a crs variable??? with x and y arrays containing coords???
@@ -84,7 +84,7 @@ def convert_datasets_to_hdf5(tiles, outfname, chunksize=(32, 128, 128),
     ts_dims = (len(tiles),)
     ts_ds = outf.create_dataset('/metadata/timestamps', shape=ts_dims,
                                 dtype=numpy.float, chunks=ts_dims)
-    ts_ds.attrs['projection'] = md.projection
+    ts_ds.attrs['crs_wkt'] = md.projection
     ts_ds.attrs['geotransform'] = md.transform
     ts_ds.attrs['samples'] = samples
     ts_ds.attrs['lines'] = lines
@@ -99,7 +99,8 @@ def convert_datasets_to_hdf5(tiles, outfname, chunksize=(32, 128, 128),
     chunk_y = chunksize[1] * chunk_multiples
     chunks = generate_tiles(samples, lines, chunk_x, chunk_y,
                             generator=False)
-    tchunks = generate_tiles(ts_dims[0], 100, 256, 100,
+    # 8*32 = 256 (8 chunk multiples for the z-axis in this example
+    tchunks = generate_tiles(ts_dims[0], 1, 256, 1,
                              generator=False)
     tchunks = [x for y, x in tchunks]
 
