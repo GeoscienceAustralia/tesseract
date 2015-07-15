@@ -117,7 +117,7 @@ def convert_datasets_to_hdf5(tiles, outfname, chunksize=(32, 128, 128),
                 ds_subs = tiles[ts:te]
                 for chunk in chunks:
                     ys, ye = chunk[0]
-                    xs, xe = chunk[0]
+                    xs, xe = chunk[1]
                     ysize = ye - ys
                     xsize = xe - xs
                     data = numpy.zeros((tsize, ysize, xsize), dtype=dtype)
