@@ -100,7 +100,7 @@ def convert_datasets_to_hdf5(tiles, outfname, chunksize=(32, 128, 128),
     chunks = generate_tiles(samples, lines, chunk_x, chunk_y,
                             generator=False)
     # 8*32 = 256 (8 chunk multiples for the z-axis in this example
-    tchunks = generate_tiles(ts_dims[0], 1, 256, 1,
+    tchunks = generate_tiles(ts_dims[0], 1, 32*9, 1,
                              generator=False)
     tchunks = [x for y, x in tchunks]
 
